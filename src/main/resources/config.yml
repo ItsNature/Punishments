@@ -1,0 +1,26 @@
+#=========================================================#
+#                 Database configuration                  #
+#=========================================================#
+
+MONGODB:
+  DATABASE: "punishments"
+  HOST: "127.0.0.1"
+  PORT: 27017
+  AUTH:
+    ENABLED: true
+    USER: "Nature"
+    PASSWORD: "Kurac"
+
+#=========================================================#
+#                Punishments configuration                #
+#=========================================================#
+
+# Requires Bungee plugin addon
+# LINK
+# Global punishments, messages
+BUNGEE: false
+
+SERVER_NAME: "Server"
+
+# SHOULD WE IP BAN WHEN BANNING?
+IP_BAN: false

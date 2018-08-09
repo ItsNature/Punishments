@@ -1,0 +1,55 @@
+APPEAL: "appeal.example.network"
+SERVER: "Example Network"
+NO_PERMISSION: "&cNo Permission."
+INVALID_NUMBER: "&eArgument &6<argument> &eis not a number."
+
+COMMAND:
+  BAN:
+    BAN_USAGE: "&6Usage: &6/&eban <player> <duration> <reason>"
+    UNBAN_USAGE: "&6Usage: &6/&eunban <player> <reason>"
+    ALREADY_BANNED: "&ePlayer &6<player> &eis already banned."
+    NOT_BANNED: "&ePlayer &6<player> &eis not banned."
+  BLACKLIST: #TODO
+    BLACKLIST_USAGE: "&6Usage: &6/&eblacklist <player> <reason>"
+    UNBLACKLIST_USAGE: "&6Usage: &6/&eunblacklist <player> <reason>"
+    ALREADY_BLACKLISTED: "&ePlayer &6<player> &eis already blacklisted."
+    NOT_BLACKLISTED: "&ePlayer &6<player> &eis not blacklisted."
+  MUTE:
+    MUTE_USAGE: "&6Usage: &6/&emute <player> <duration> <reason>"
+    UNMUTE_USAGE: "&6Usage: &6/&eunmute <player> <reason>"
+    ALREADY_MUTED: "&ePlayer &6<player> &eis already muted."
+    NOT_MUTED: "&ePlayer &6<player> &eis not muted."
+    MUTED: "&eYou have been muted for &6<reason> &efor &6<duration> &eby &6<sender>&e."
+    CHAT_MUTED: "&eYou are muted for &6<reason> &efor &6<duration>&e."
+  WARN: #TODO
+    WARN_USAGE: "&6Usage: &6/&ewarn <player> <reason>"
+    UNWARN_USAGE: "&6Usage: &6/&eunwarn <player> <reason>"
+    NOT_WARNED: "&ePlayer &6<player> &eis not warned."
+    WARNED: "&eYou have been warned for &6<reason> &eby &6<sender>&e."
+  KICK_USAGE: "&6Usage: &6/&ekick <player> <reason>" #TODO
+  IP_USAGE: "&6Usage: &6/&eip <player>" #TODO
+  ALTS_USAGE: "&6Usage: &6/&ealts <player>" #TODO
+  STAFFPUNISHMENTS_USAGE: "&6Usage: &6/&estaffpunishments <player>"
+  PUNISHMENTS_USAGE: "&6Usage: &6/&epunishments <player>"
+  PUNISHROLLBACK:
+    USAGE: "&6Usage: &6/&epunishrollback <player> <amount>"
+    INVALID_AMOUNT: "&ePlayer &6<player> &edoesn't have that many punishments!"
+    SUCCESS: "&eYou have successfully rolled back &6<amount> &epunishments from &6<player>!"
+
+PUNISH:
+  BROADCAST_PUBLIC: "&a<target> has been <type> by <sender>."
+  BROADCAST_SILENT: "&a<target> has been &esilently &a<type> by <sender>."
+  BLACKLIST_KICK: "&cYou have been blacklisted from <server>
+                   \nReason: <reason>
+                   \nBlacklisted on: <date>
+                   \nBlacklisted by: <sender>
+                   \n&cThis punishment cannot be appealed!"
+  BAN_KICK: "&cYou have been banned from <server>
+                \nDuration: <duration>
+                \nReason: <reason>
+                \nBanned on: <date>
+                \nBanned by: <sender>
+                \n&cAppeal at: <appeal>"
+  KICK_KICK: "&cYou have been kicked from <server>
+              \nReason: <reason>
+              \nKicked by: <sender>"
