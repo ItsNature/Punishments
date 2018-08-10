@@ -84,35 +84,45 @@ public class CheckPunishmentsManager implements Listener {
 
             List<String> lore = new ArrayList<>();
 
-            if(punishment.isActive()) {
+            if(type == PunishmentType.KICK) {
                 lore.add(Color.translate("&7&m--------------------------------"));
                 lore.add(Color.translate("&7Issued by: &c" + punishment.getSender()));
                 lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
-                lore.add(Color.translate("&7Duration: &c" + punishment.getTimeLeft()));
                 lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
                 lore.add(Color.translate("&7&m--------------------------------"));
 
                 item = new ItemBuilder(Material.WOOL, 1, 5).setName("&e" + name).setLore(lore).build();
-            } else if(punishment.isRemoved()){
-                lore.add(Color.translate("&7&m--------------------------------"));
-                lore.add(Color.translate("&7Issued by: &c" + punishment.getSender()));
-                lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
-                lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
-                lore.add(Color.translate("&7Removed By: &c" + punishment.getRemovedBy()));
-                lore.add(Color.translate("&7Removed Reason: &c" + punishment.getRemovedReason()));
-                lore.add(Color.translate("&7Removed At: &c" + Utils.format(punishment.getRemovedAt())));
-                lore.add(Color.translate("&7&m--------------------------------"));
-
-                item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + name).setLore(lore).build();
             } else {
-                lore.add(Color.translate("&7&m--------------------------------"));
-                lore.add(Color.translate("&7Issued by: &c" + punishment.getSender()));
-                lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
-                lore.add(Color.translate("&7Epired At: &c" + Utils.format(punishment.getAdded() + punishment.getDuration())));
-                lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
-                lore.add(Color.translate("&7&m--------------------------------"));
+                if(punishment.isActive()) {
+                    lore.add(Color.translate("&7&m--------------------------------"));
+                    lore.add(Color.translate("&7Issued by: &c" + punishment.getSender()));
+                    lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
+                    lore.add(Color.translate("&7Duration: &c" + punishment.getTimeLeft()));
+                    lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
+                    lore.add(Color.translate("&7&m--------------------------------"));
 
-                item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + name).setLore(lore).build();
+                    item = new ItemBuilder(Material.WOOL, 1, 5).setName("&e" + name).setLore(lore).build();
+                } else if(punishment.isRemoved()){
+                    lore.add(Color.translate("&7&m--------------------------------"));
+                    lore.add(Color.translate("&7Issued by: &c" + punishment.getSender()));
+                    lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
+                    lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
+                    lore.add(Color.translate("&7Removed By: &c" + punishment.getRemovedBy()));
+                    lore.add(Color.translate("&7Removed Reason: &c" + punishment.getRemovedReason()));
+                    lore.add(Color.translate("&7Removed At: &c" + Utils.format(punishment.getRemovedAt())));
+                    lore.add(Color.translate("&7&m--------------------------------"));
+
+                    item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + name).setLore(lore).build();
+                } else {
+                    lore.add(Color.translate("&7&m--------------------------------"));
+                    lore.add(Color.translate("&7Issued by: &c" + punishment.getSender()));
+                    lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
+                    lore.add(Color.translate("&7Expired At: &c" + Utils.format(punishment.getAdded() + punishment.getDuration())));
+                    lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
+                    lore.add(Color.translate("&7&m--------------------------------"));
+
+                    item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + name).setLore(lore).build();
+                }
             }
 
             inventory.setItem(18 + punishments.indexOf(punishment) % 18, item);
@@ -162,14 +172,14 @@ public class CheckPunishmentsManager implements Listener {
                 break;
             }
             case CARPET: {
-                PunishmentType type = PunishmentType.valueOf(event.getInventory().getItem(49).getItemMeta().getDisplayName().split(" ")[1]);
-
                 if(!name.contains("Page")) return;
 
                 String number = inv.split("- ")[1];
 
                 int page = Integer.parseInt(number.split("/")[0]);
                 int total = Integer.parseInt(number.split("/")[1]);
+
+                PunishmentType type = PunishmentType.valueOf(event.getInventory().getItem(49).getItemMeta().getDisplayName().split(" ")[1]);
 
                 if(name.contains("Previous")) {
                     if (page == 1) {

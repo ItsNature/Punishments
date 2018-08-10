@@ -1,7 +1,11 @@
 APPEAL: "appeal.example.network"
 SERVER: "Example Network"
 NO_PERMISSION: "&cNo Permission."
+FOR_PLAYER_ONLY: "&cThis command is for player use only!"
 INVALID_NUMBER: "&eArgument &6<argument> &eis not a number."
+PLAYER_NOT_ONLINE: "&ePlayer &6<player> &eis not online."
+DATABASE_NOT_CONNECTED: "&cFailed to load data: Database not connected!"
+INVALID_NAME: "&cYou cannot join with that name!"
 
 COMMAND:
   BAN:
@@ -9,7 +13,7 @@ COMMAND:
     UNBAN_USAGE: "&6Usage: &6/&eunban <player> <reason>"
     ALREADY_BANNED: "&ePlayer &6<player> &eis already banned."
     NOT_BANNED: "&ePlayer &6<player> &eis not banned."
-  BLACKLIST: #TODO
+  BLACKLIST:
     BLACKLIST_USAGE: "&6Usage: &6/&eblacklist <player> <reason>"
     UNBLACKLIST_USAGE: "&6Usage: &6/&eunblacklist <player> <reason>"
     ALREADY_BLACKLISTED: "&ePlayer &6<player> &eis already blacklisted."
@@ -21,20 +25,35 @@ COMMAND:
     NOT_MUTED: "&ePlayer &6<player> &eis not muted."
     MUTED: "&eYou have been muted for &6<reason> &efor &6<duration> &eby &6<sender>&e."
     CHAT_MUTED: "&eYou are muted for &6<reason> &efor &6<duration>&e."
-  WARN: #TODO
+  WARN:
     WARN_USAGE: "&6Usage: &6/&ewarn <player> <reason>"
     UNWARN_USAGE: "&6Usage: &6/&eunwarn <player> <reason>"
     NOT_WARNED: "&ePlayer &6<player> &eis not warned."
     WARNED: "&eYou have been warned for &6<reason> &eby &6<sender>&e."
-  KICK_USAGE: "&6Usage: &6/&ekick <player> <reason>" #TODO
-  IP_USAGE: "&6Usage: &6/&eip <player>" #TODO
-  ALTS_USAGE: "&6Usage: &6/&ealts <player>" #TODO
+  KICK_USAGE: "&6Usage: &6/&ekick <player> <reason>"
+  IP:
+    USAGE: "&6Usage: &6/&eip <player>"
+    NOT_FOUND: "&ePlayer &6<player> &enever joined the server before."
+    IP: "&6IP &eof player &6<player> &eis &6<ip>"
+  ALTS:
+    USAGE: "&6Usage: &6/&ealts <player>"
+    FORMAT: "&7, "
+    ONLINE: "&a"
+    OFFLINE: "&7"
+    BANNED: "&c"
+    NO_ALTS: "&ePlayer &6<player> &ehas no alts."
+    ALTS: "&eListing alts for player &6<player> &e- &7<alts>"
+    ALTS_BANNED:
+    - ""
+    - "&eFound banned accounts for player &6<player> - &7<alts>"
+    - ""
   STAFFPUNISHMENTS_USAGE: "&6Usage: &6/&estaffpunishments <player>"
-  PUNISHMENTS_USAGE: "&6Usage: &6/&epunishments <player>"
+  CHECKPUNISHMENTS_USAGE: "&6Usage: &6/&echeckpunishments <player>"
   PUNISHROLLBACK:
-    USAGE: "&6Usage: &6/&epunishrollback <player> <amount>"
+    USAGE: "&6Usage: &6/&epunishrollback <player> <amount|all>"
     INVALID_AMOUNT: "&ePlayer &6<player> &edoesn't have that many punishments!"
     SUCCESS: "&eYou have successfully rolled back &6<amount> &epunishments from &6<player>!"
+  RELOAD: "&6Successfully reloaded configuration files."
 
 PUNISH:
   BROADCAST_PUBLIC: "&a<target> has been <type> by <sender>."
@@ -53,3 +72,5 @@ PUNISH:
   KICK_KICK: "&cYou have been kicked from <server>
               \nReason: <reason>
               \nKicked by: <sender>"
+  IP_CONNECTED: "&cYou have been kicked from <server>
+                \nYour ip address is connected to a punished player <player>"

@@ -29,7 +29,7 @@ public class MuteCommand extends BaseCommand {
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-        Punishment punishment = Utils.getMutedPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()));
+        Punishment punishment = Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.MUTE);
 
         if(punishment != null) {
             sender.sendMessage(Language.ALREADY_MUTED.replace("<player>", target.getName()));

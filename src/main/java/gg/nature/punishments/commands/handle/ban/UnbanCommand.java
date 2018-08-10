@@ -5,6 +5,7 @@ import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.punish.Punishment;
+import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Message;
 import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
@@ -30,7 +31,7 @@ public class UnbanCommand extends BaseCommand {
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
         PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-        Punishment punishment = Utils.getBannedPunishment(data);
+        Punishment punishment = Utils.getPunishment(data, PunishmentType.BAN);
 
         if(punishment == null) {
             sender.sendMessage(Language.NOT_BANNED.replace("<player>", target.getName()));
@@ -51,7 +52,7 @@ public class UnbanCommand extends BaseCommand {
         punishment.setRemovedReason(Utils.replaceSilent(reason));
         punishment.setRemovedAt(System.currentTimeMillis());
 
-        if(!target.isOnline()) data.saveAsync(false);
+        if(!target.isOnline()) data.saveAsync();
 
         if(Utils.isSilent(reason)) {
             Message.sendMessage(Utils.translate(Language.BROADCAST_SILENT, punishment, true), "punish.staff");

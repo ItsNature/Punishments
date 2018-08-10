@@ -29,7 +29,7 @@ public class BanCommand extends BaseCommand {
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-        Punishment punishment = Utils.getBannedPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()));
+        Punishment punishment = Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.BAN);
 
         if(punishment != null) {
             sender.sendMessage(Language.ALREADY_BANNED.replace("<player>", target.getName()));

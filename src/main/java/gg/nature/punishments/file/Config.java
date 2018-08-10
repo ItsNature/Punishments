@@ -14,6 +14,8 @@ public class Config {
     public static boolean BUNGEE;
     public static String SERVER_NAME;
     public static boolean IP_BAN;
+    public static boolean IP_COMMAND_CONSOLE_ONLY;
+    public static boolean SHOW_BANNED_ALTS;
 
     public Config() {
         ConfigFile config = Punishments.getInstance().getConfigFile();
@@ -28,5 +30,7 @@ public class Config {
         BUNGEE = config.getBoolean("BUNGEE");
         SERVER_NAME = config.getString("SERVER_NAME");
         IP_BAN = config.getBoolean("IP_BAN");
+        IP_COMMAND_CONSOLE_ONLY = config.getBoolean("IP_COMMAND_CONSOLE_ONLY");
+        SHOW_BANNED_ALTS = config.getBoolean("SHOW_BANNED_ALTS");
     }
 }

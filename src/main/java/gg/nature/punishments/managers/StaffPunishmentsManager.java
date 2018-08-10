@@ -3,6 +3,7 @@ package gg.nature.punishments.managers;
 import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.ItemBuilder;
+import gg.nature.punishments.utils.Message;
 import gg.nature.punishments.utils.Utils;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.punish.Punishment;
@@ -55,10 +56,13 @@ public class StaffPunishmentsManager implements Listener {
         return inventory;
     }
 
-    private Inventory getPunishmentsByType(PunishData data, PunishmentType type, int page) {
-        List<String> punished = data.getAllPunished();
+    private Inventory getPunishedByType(PunishData data, PunishmentType type, int page) {
+        List<String> newPunished = new ArrayList<>();
 
-        int maxPages = (int) Math.ceil(punished.size() / 18.0D);
+        data.getPunished().stream().filter(punish -> PunishmentType.valueOf(punish.split("/")[1].split("-")[0]) == type)
+        .forEach(newPunished::add);
+
+        int maxPages = (int) Math.ceil(newPunished.size() / 18.0D);
 
         Inventory inventory = Bukkit.createInventory(null, 54, Color.translate("&6[S] " + data.getName() + " - " + page + "/" + (maxPages == 0 ? 1 : maxPages)));
 
@@ -68,53 +72,62 @@ public class StaffPunishmentsManager implements Listener {
 
         IntStream.rangeClosed(9, 17).forEach(i -> inventory.setItem(i, glass));
 
-        punished.forEach(punish -> {
-            if(punished.indexOf(punish) < page * 18 - 18) return;
-            if(punished.indexOf(punish) >= page * 18) return;
+        newPunished.forEach(punish -> {
+            if (newPunished.indexOf(punish) < page * 18 - 18) return;
+            if (newPunished.indexOf(punish) >= page * 18) return;
 
-            String firstType = punish.split("/")[1];
+            OfflinePlayer target = Bukkit.getOfflinePlayer(punish.split("/")[0]);
+            PunishData otherData = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
 
-            if(PunishmentType.valueOf(firstType.split("-")[0]) != type) return;
-
-            Punishment punishment = Utils.getByNameAndAdded(data, punish);
+            Punishment punishment = Utils.getByNameAndAdded(otherData, type, Long.parseLong(punish.split("-")[1]));
 
             if(punishment == null) return;
 
             ItemStack item;
             List<String> lore = new ArrayList<>();
 
-            if(punishment.isActive()) {
+            if(type == PunishmentType.KICK) {
                 lore.add(Color.translate("&7&m--------------------------------"));
                 lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
                 lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
-                lore.add(Color.translate("&7Duration: &c" + punishment.getTimeLeft()));
                 lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
                 lore.add(Color.translate("&7&m--------------------------------"));
 
                 item = new ItemBuilder(Material.WOOL, 1, 5).setName("&e" + punishment.getTarget()).setLore(lore).build();
-            } else if(punishment.isRemoved()){
-                lore.add(Color.translate("&7&m--------------------------------"));
-                lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
-                lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
-                lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
-                lore.add(Color.translate("&7Removed By: &c" + punishment.getRemovedBy()));
-                lore.add(Color.translate("&7Removed Reason: &c" + punishment.getRemovedReason()));
-                lore.add(Color.translate("&7Removed At: &c" + Utils.format(punishment.getRemovedAt())));
-                lore.add(Color.translate("&7&m--------------------------------"));
-
-                item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + punishment.getTarget()).setLore(lore).build();
             } else {
-                lore.add(Color.translate("&7&m--------------------------------"));
-                lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
-                lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
-                lore.add(Color.translate("&7Epired At: &c" + Utils.format(punishment.getAdded() + punishment.getDuration())));
-                lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
-                lore.add(Color.translate("&7&m--------------------------------"));
+                if(punishment.isActive()) {
+                    lore.add(Color.translate("&7&m--------------------------------"));
+                    lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
+                    lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
+                    lore.add(Color.translate("&7Duration: &c" + punishment.getTimeLeft()));
+                    lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
+                    lore.add(Color.translate("&7&m--------------------------------"));
 
-                item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + punishment.getTarget()).setLore(lore).build();
+                    item = new ItemBuilder(Material.WOOL, 1, 5).setName("&e" + punishment.getTarget()).setLore(lore).build();
+                } else if(punishment.isRemoved()){
+                    lore.add(Color.translate("&7&m--------------------------------"));
+                    lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
+                    lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
+                    lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
+                    lore.add(Color.translate("&7Removed By: &c" + punishment.getRemovedBy()));
+                    lore.add(Color.translate("&7Removed Reason: &c" + punishment.getRemovedReason()));
+                    lore.add(Color.translate("&7Removed At: &c" + Utils.format(punishment.getRemovedAt())));
+                    lore.add(Color.translate("&7&m--------------------------------"));
+
+                    item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + punishment.getTarget()).setLore(lore).build();
+                } else {
+                    lore.add(Color.translate("&7&m--------------------------------"));
+                    lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
+                    lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
+                    lore.add(Color.translate("&7Expired At: &c" + Utils.format(punishment.getAdded() + punishment.getDuration())));
+                    lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
+                    lore.add(Color.translate("&7&m--------------------------------"));
+
+                    item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + punishment.getTarget()).setLore(lore).build();
+                }
             }
 
-            inventory.setItem(18 + punished.indexOf(punish) % 18, item);
+            inventory.setItem(18 + newPunished.indexOf(punish) % 18, item);
         });
 
         IntStream.rangeClosed(36, 44).forEach(i -> inventory.setItem(i, glass));
@@ -146,12 +159,12 @@ public class StaffPunishmentsManager implements Listener {
 
         switch(item.getType()) {
             case WOOL: {
-                if(item.getDurability() == 5) return;
+                if(inv.contains("-") && inv.contains("/")) return;
 
                 PunishmentType type = PunishmentType.valueOf(name.substring(2, name.length() - 1).toUpperCase());
                 PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
 
-                player.openInventory(this.getPunishmentsByType(data, type, 1));
+                player.openInventory(this.getPunishedByType(data, type, 1));
                 break;
             }
             case REDSTONE_BLOCK: {
@@ -161,14 +174,14 @@ public class StaffPunishmentsManager implements Listener {
                 break;
             }
             case CARPET: {
-                PunishmentType type = PunishmentType.valueOf(event.getInventory().getItem(49).getItemMeta().getDisplayName().split(" ")[1]);
-
                 if(!name.contains("Page")) return;
 
                 String number = inv.split("- ")[1];
 
                 int page = Integer.parseInt(number.split("/")[0]);
                 int total = Integer.parseInt(number.split("/")[1]);
+
+                PunishmentType type = PunishmentType.valueOf(event.getInventory().getItem(49).getItemMeta().getDisplayName().split(" ")[1]);
 
                 if(name.contains("Previous")) {
                     if (page == 1) {
@@ -178,7 +191,7 @@ public class StaffPunishmentsManager implements Listener {
 
                     PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
 
-                    player.openInventory(this.getPunishmentsByType(data, type, page - 1));
+                    player.openInventory(this.getPunishedByType(data, type, page - 1));
                     return;
                 }
 
@@ -191,7 +204,7 @@ public class StaffPunishmentsManager implements Listener {
 
                 PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
 
-                player.openInventory(this.getPunishmentsByType(data, type, page + 1));
+                player.openInventory(this.getPunishedByType(data, type, page + 1));
             }
         }
     }

@@ -1,40 +1,38 @@
-package gg.nature.punishments.commands.handle.mute;
+package gg.nature.punishments.commands.handle.warn;
 
-import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
+import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.punish.Punishment;
-import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Message;
 import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
-import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.stream.IntStream;
 
-public class UnmuteCommand extends BaseCommand {
+public class UnwarnCommand extends BaseCommand {
 
-    public UnmuteCommand() {
-        super("unmute", Arrays.asList("unmute", "unsilent"), "punish.unban");
+    public UnwarnCommand() {
+        super("unwarn", "punish.unwarn");
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         if(args.length < 2) {
-            sender.sendMessage(Language.UNMUTE_USAGE);
+            sender.sendMessage(Language.UNWARN_USAGE);
             return;
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
         PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-        Punishment punishment = Utils.getPunishment(data, PunishmentType.MUTE);
+        Punishment punishment = Utils.getLastWarnPunishment(data);
 
         if(punishment == null) {
-            sender.sendMessage(Language.NOT_MUTED.replace("<player>", target.getName()));
+            sender.sendMessage(Language.NOT_WARNED.replace("<player>", target.getName()));
             return;
         }
 
@@ -43,7 +41,7 @@ public class UnmuteCommand extends BaseCommand {
         String reason = joiner.toString();
 
         if(!Utils.isReasonValid(reason)) {
-            sender.sendMessage(Language.UNMUTE_USAGE);
+            sender.sendMessage(Language.UNWARN_USAGE);
             return;
         }
 

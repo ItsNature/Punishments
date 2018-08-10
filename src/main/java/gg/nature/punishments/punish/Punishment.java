@@ -1,12 +1,12 @@
 package gg.nature.punishments.punish;
 
+import gg.nature.punishments.Punishments;
 import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.utils.Message;
 import gg.nature.punishments.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
-import gg.nature.punishments.Punishments;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -72,7 +72,7 @@ public class Punishment {
 
     private void request(boolean silent) {
         // TODO: bungee implementation
-        // Kicking, message
+        // Returnati ako je bungee, kad posalje bungee message, kicka i posalje poruku, pa posalje nazad bungee message i u ovjde u pluginu tek saveam
 
         OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(this.target);
 
@@ -88,11 +88,10 @@ public class Punishment {
         Player target = Bukkit.getPlayer(this.target);
 
         if(target == null) {
-
             PunishData targetData = Punishments.getInstance().getPunishDataManager().get(offlineTarget.getUniqueId(), offlineTarget.getName());
 
             targetData.getPunishments().add(this);
-            targetData.saveAsync(false);
+            targetData.saveAsync();
         } else {
             PunishData targetData = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
 

@@ -3,32 +3,39 @@ package gg.nature.punishments.commands.handle;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
 import gg.nature.punishments.data.PunishData;
+import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
+public class IPCommand extends BaseCommand {
 
-public class CheckPunishmentsCommand extends BaseCommand {
-
-    public CheckPunishmentsCommand() {
-        super("checkpunishments", Collections.singletonList("c"), "punish.checkpunishments", true);
+    public IPCommand() {
+        super("ip", "punish.ip");
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        Player player = (Player) sender;
-
-        if (args.length == 1) {
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-            PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-
-            player.openInventory(Punishments.getInstance().getCheckPunishmentsManager().getPunishmentsInventory(data));
+        if(Config.IP_COMMAND_CONSOLE_ONLY && sender instanceof Player) {
+            sender.sendMessage(Language.NO_PERMISSION);
             return;
         }
 
-        player.sendMessage(Language.CHECKPUNISHMENTS_USAGE);
+        if(args.length == 1) {
+            OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+            PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
+
+            if(data.getIp().equals("")) {
+                sender.sendMessage(Language.IP_NOT_FOUND.replace("<player>", target.getName()));
+                return;
+            }
+
+            sender.sendMessage(Language.IP.replace("<player>", target.getName()).replace("<ip>", data.getIp()));
+            return;
+        }
+
+        sender.sendMessage(Language.IP_USAGE);
     }
 }

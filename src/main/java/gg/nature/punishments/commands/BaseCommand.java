@@ -51,12 +51,12 @@ public abstract class BaseCommand extends BukkitCommand {
     @Override
     public boolean execute(CommandSender sender, String alias, String[] args) {
         if(sender instanceof ConsoleCommandSender && this.forPlayersOnly) {
-            sender.sendMessage(Language.NO_PERMISSION);
+            sender.sendMessage(Language.FOR_PLAYER_ONLY);
             return true;
         }
 
         if(!sender.hasPermission(this.getPermission())) {
-            sender.sendMessage(this.getPermissionMessage());
+            sender.sendMessage(Language.NO_PERMISSION);
             return true;
         }
 

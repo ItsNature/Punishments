@@ -22,5 +22,11 @@ BUNGEE: false
 
 SERVER_NAME: "Server"
 
-# SHOULD WE IP BAN WHEN BANNING?
+# Should we ip ban when banning?
 IP_BAN: false
+
+# Should the IP command be executable by console only?
+IP_COMMAND_CONSOLE_ONLY: false
+
+# Should we show banned alts when player joins the server?
+SHOW_BANNED_ALTS: true

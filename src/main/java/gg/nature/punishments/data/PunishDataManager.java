@@ -1,11 +1,15 @@
 package gg.nature.punishments.data;
 
-import lombok.Getter;
+import com.mongodb.Block;
+import com.mongodb.client.model.Filters;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.punish.Punishment;
+import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Color;
 import gg.nature.punishments.utils.Utils;
+import lombok.Getter;
+import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,9 +36,9 @@ public class PunishDataManager implements Listener {
     }
 
     public void disable() {
-        // TODO: save all data
+        Bukkit.getOnlinePlayers().forEach(player -> this.dataMap.get(player.getUniqueId()).save());
 
-        this.consoleData.save(true);
+        this.consoleData.save();
     }
 
     public void loadConsole() {
@@ -43,47 +47,25 @@ public class PunishDataManager implements Listener {
         this.consoleData.load();
     }
 
-    @EventHandler
-    public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
-        if(!Punishments.getInstance().getDatabaseManager().isConnected()) {
-            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-            event.setKickMessage(Color.translate("&cFailed to load data: Database not connected!"));
-            return;
-        }
+    public void loadAlts(String ip, PunishData data) {
+        data.getAlts().clear();
 
-        if(event.getName().equalsIgnoreCase("CONSOLE")) {
-            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-            event.setKickMessage(Color.translate("&cYou cannot join with that name!"));
-            return;
-        }
+        Punishments.getInstance().getDatabaseManager().getPunishments().find(Filters.eq("ip", ip)).forEach((Block) found -> {
+            Document document = (Document) found;
 
-        PunishData data = this.get(event.getUniqueId(), event.getName());
+            String name = document.getString("name");
+            UUID uuid = UUID.fromString(document.getString("uuid"));
 
-        if(!data.isLoaded()) data.load();
+            PunishData altData = Punishments.getInstance().getPunishDataManager().get(uuid, name);
 
-        Utils.kickIfNeeded(data, event);
-    }
+            if(altData.getName().equalsIgnoreCase(data.getName())) return;
 
-    @EventHandler(priority = EventPriority.LOW)
-    public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
-        Player player = event.getPlayer();
-        PunishData data = Punishments.getInstance().getPunishDataManager().get(player.getUniqueId(), player.getName());
-        Punishment punishment = Utils.getMutedPunishment(data);
-
-        if(punishment == null) return;
-
-        event.setCancelled(true);
-        player.sendMessage(Utils.translate(Language.CHAT_MUTED, punishment, false));
-    }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        PunishData data = this.get(player.getUniqueId(), player.getName());
-
-        data.setIp(player.getAddress().getHostName());
-
-        if(data.isLoaded()) data.saveAsync(true);
+            if(Utils.getPunishment(altData, PunishmentType.BAN) == null) {
+                data.getAlts().add(altData.getName() + "/DEFAULT");
+            } else {
+                data.getAlts().add(altData.getName() + "/BANNED");
+            }
+        });
     }
 
     public PunishData get(UUID uuid, String name) {
@@ -96,5 +78,52 @@ public class PunishDataManager implements Listener {
         }
 
         return data;
+    }
+
+    @EventHandler
+    public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
+        if(!Punishments.getInstance().getDatabaseManager().isConnected()) {
+            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
+            event.setKickMessage(Language.DATABASE_NOT_CONNECTED);
+            return;
+        }
+
+        if(event.getName().equalsIgnoreCase("CONSOLE")) {
+            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
+            event.setKickMessage(Language.INVALID_NAME);
+            return;
+        }
+
+        PunishData data = this.get(event.getUniqueId(), event.getName());
+
+        if(!data.isLoaded()) data.load();
+
+        this.loadAlts(event.getAddress().getHostName(), data);
+
+        Utils.kickIfNeeded(data, event);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
+        Player player = event.getPlayer();
+        PunishData data = Punishments.getInstance().getPunishDataManager().get(player.getUniqueId(), player.getName());
+        Punishment punishment = Utils.getPunishment(data, PunishmentType.MUTE);
+
+        if(punishment == null) return;
+
+        event.setCancelled(true);
+        player.sendMessage(Utils.translate(Language.CHAT_MUTED, punishment, false));
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if(!Punishments.getInstance().getDatabaseManager().isConnected()) return;
+
+        Player player = event.getPlayer();
+        PunishData data = this.get(player.getUniqueId(), player.getName());
+
+        data.setIp(player.getAddress().getHostName());
+
+        if(data.isLoaded()) data.saveAsync();
     }
 }

@@ -9,6 +9,7 @@ import gg.nature.punishments.managers.CheckPunishmentsManager;
 import gg.nature.punishments.managers.DatabaseManager;
 import gg.nature.punishments.managers.StaffPunishmentsManager;
 import gg.nature.punishments.utils.Color;
+import gg.nature.punishments.utils.Message;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -36,11 +37,7 @@ public class Punishments extends JavaPlugin {
 
         long time = System.currentTimeMillis();
 
-        this.configFile = new ConfigFile("config.yml");
-        this.languageFile = new ConfigFile("language.yml");
-
-        new Config();
-        new Language();
+        this.loadFiles();
 
         this.commandManager = new CommandManager();
 
@@ -53,7 +50,11 @@ public class Punishments extends JavaPlugin {
 
         this.started(time);
 
-        // TODO: reload cmd
+        // TODO:
+        /**
+         * HOVERMESSAGES
+         * BUNGEE IMPLEMENTATION
+         */
     }
 
     @Override
@@ -65,14 +66,20 @@ public class Punishments extends JavaPlugin {
         this.databaseManager.disable();
     }
 
-    private void started(long time) {
-        ConsoleCommandSender console = Bukkit.getConsoleSender();
+    public void loadFiles() {
+        this.configFile = new ConfigFile("config.yml");
+        this.languageFile = new ConfigFile("language.yml");
 
-        console.sendMessage(Color.translate("&3===&b=============================================&3==="));
-        console.sendMessage(Color.translate("- &bName&7: Punishments"));
-        console.sendMessage(Color.translate("- &bVersion&7: " + this.getDescription().getVersion()));
-        console.sendMessage(Color.translate("- &bAuthor&7: ItsNature"));
-        console.sendMessage(Color.translate("- &bEnabled. Took &a" + (System.currentTimeMillis() - time) + " &bms."));
-        console.sendMessage(Color.translate("&3===&b=============================================&3==="));
+        new Config();
+        new Language();
+    }
+
+    private void started(long time) {
+        Message.sendConsole("&3===&b=============================================&3===");
+        Message.sendConsole("- &bName&7: Punishments");
+        Message.sendConsole("- &bVersion&7: " + this.getDescription().getVersion());
+        Message.sendConsole("- &bAuthor&7: ItsNature");
+        Message.sendConsole("- &bEnabled. Took &a" + (System.currentTimeMillis() - time) + " &bms.");
+        Message.sendConsole("&3===&b=============================================&3===");
     }
 }
