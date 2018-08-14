@@ -1,24 +1,25 @@
 package gg.nature.punishments.commands.handle.ban;
 
+import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
-import gg.nature.punishments.punish.PunishmentType;
-import gg.nature.punishments.utils.Utils;
-import gg.nature.punishments.Punishments;
 import gg.nature.punishments.punish.Punishment;
+import gg.nature.punishments.punish.PunishmentType;
+import gg.nature.punishments.utils.Message;
+import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.stream.IntStream;
 
 public class BanCommand extends BaseCommand {
 
     public BanCommand() {
-        super("ban", Collections.singletonList("tempban"), "punish.ban");
+        super("ban", Arrays.asList("tempban", "tban"), "punish.ban");
     }
 
     @Override
@@ -29,9 +30,13 @@ public class BanCommand extends BaseCommand {
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-        Punishment punishment = Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.BAN);
 
-        if(punishment != null) {
+        if(!Utils.isPermissible(sender, target)) {
+            sender.sendMessage(Language.NO_PERMISSION);
+            return;
+        }
+
+        if(Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.BAN) != null) {
             sender.sendMessage(Language.ALREADY_BANNED.replace("<player>", target.getName()));
             return;
         }

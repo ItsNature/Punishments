@@ -10,18 +10,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class StaffPunishmentsCommand extends BaseCommand {
 
     public StaffPunishmentsCommand() {
-        super("staffpunishments", Arrays.asList("staffpunishments", "staffc"), "punish.staffpunishments", true);
+        super("staffpunishments", Collections.singletonList("staffc"), "punish.staffpunishments", true);
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         Player player = (Player) sender;
 
-        if (args.length == 1) {
+        if(args.length == 1) {
             OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
             PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
 

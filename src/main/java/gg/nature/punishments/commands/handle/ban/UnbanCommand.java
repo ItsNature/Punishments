@@ -1,12 +1,11 @@
 package gg.nature.punishments.commands.handle.ban;
 
-import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
+import gg.nature.punishments.data.PunishData;
+import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
-import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.punish.PunishmentType;
-import gg.nature.punishments.utils.Message;
 import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -31,9 +30,8 @@ public class UnbanCommand extends BaseCommand {
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
         PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-        Punishment punishment = Utils.getPunishment(data, PunishmentType.BAN);
 
-        if(punishment == null) {
+        if(Utils.getPunishment(data, PunishmentType.BAN) == null) {
             sender.sendMessage(Language.NOT_BANNED.replace("<player>", target.getName()));
             return;
         }
@@ -47,18 +45,6 @@ public class UnbanCommand extends BaseCommand {
             return;
         }
 
-        punishment.setRemoved(true);
-        punishment.setRemovedBy(sender.getName());
-        punishment.setRemovedReason(Utils.replaceSilent(reason));
-        punishment.setRemovedAt(System.currentTimeMillis());
-
-        if(!target.isOnline()) data.saveAsync();
-
-        if(Utils.isSilent(reason)) {
-            Message.sendMessage(Utils.translate(Language.BROADCAST_SILENT, punishment, true), "punish.staff");
-            return;
-        }
-
-        Message.sendMessage(Utils.translate(Language.BROADCAST_PUBLIC, punishment, true));
+        Punishments.getInstance().getPunishDataManager().unpunish(Config.BUNGEE, PunishmentType.BAN , target, sender.getName(), Utils.replaceSilent(reason), data);
     }
 }

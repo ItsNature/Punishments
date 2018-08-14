@@ -1,8 +1,8 @@
 package gg.nature.punishments.file;
 
-import lombok.Getter;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.utils.Color;
+import lombok.Getter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -30,22 +30,9 @@ public class ConfigFile extends YamlConfiguration {
         }
     }
 
-    public void save() {
-        try {
-            this.save(this.file);
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public int getInt(String path) {
         return super.getInt(path, 0);
-    }
-
-    @Override
-    public double getDouble(String path) {
-        return super.getDouble(path, 0.0);
     }
 
     @Override

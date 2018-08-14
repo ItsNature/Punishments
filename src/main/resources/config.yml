@@ -2,24 +2,34 @@
 #                 Database configuration                  #
 #=========================================================#
 
+# This is required in order for the plugin to work.
 MONGODB:
   DATABASE: "punishments"
   HOST: "127.0.0.1"
   PORT: 27017
   AUTH:
-    ENABLED: true
-    USER: "Nature"
-    PASSWORD: "Kurac"
+    ENABLED: false
+    USER: ""
+    PASSWORD: ""
+
+# This is only required for bungee mode due to synchronization through the whole network.
+REDIS:
+  CHANNEL: "punishments"
+  HOST: "127.0.0.1"
+  PORT: 6379
+  AUTH:
+    ENABLED: false
+    PASSWORD: ""
 
 #=========================================================#
 #                Punishments configuration                #
 #=========================================================#
 
-# Requires Bungee plugin addon
-# LINK
-# Global punishments, messages
+# Requires redis database
+# Global punishments, messages...
 BUNGEE: false
 
+# Server name used when punishing a player.
 SERVER_NAME: "Server"
 
 # Should we ip ban when banning?
@@ -30,3 +40,14 @@ IP_COMMAND_CONSOLE_ONLY: false
 
 # Should we show banned alts when player joins the server?
 SHOW_BANNED_ALTS: true
+
+# Weight
+# EXAMPLE: Players with weight 10 wont be able to ban a player with weight 20.
+WEIGHT:
+  10: "punish.weight.10"
+  20: "punish.weight.20"
+  30: "punish.weight.30"
+
+DEFAULT:
+  OP: 999
+  CONSOLE: 1000

@@ -2,17 +2,16 @@ package gg.nature.punishments;
 
 import gg.nature.punishments.commands.CommandManager;
 import gg.nature.punishments.data.PunishDataManager;
+import gg.nature.punishments.database.DatabaseManager;
+import gg.nature.punishments.database.Mongo;
+import gg.nature.punishments.database.Redis;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.ConfigFile;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.managers.CheckPunishmentsManager;
-import gg.nature.punishments.managers.DatabaseManager;
 import gg.nature.punishments.managers.StaffPunishmentsManager;
-import gg.nature.punishments.utils.Color;
 import gg.nature.punishments.utils.Message;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
@@ -25,8 +24,12 @@ public class Punishments extends JavaPlugin {
 
     private CommandManager commandManager;
 
-    private CheckPunishmentsManager checkPunishmentsManager;
     private DatabaseManager databaseManager;
+
+    private Mongo mongo;
+    private Redis redis;
+
+    private CheckPunishmentsManager checkPunishmentsManager;
     private StaffPunishmentsManager staffPunishmentsManager;
 
     private PunishDataManager punishDataManager;
@@ -41,19 +44,24 @@ public class Punishments extends JavaPlugin {
 
         this.commandManager = new CommandManager();
 
-        this.checkPunishmentsManager = new CheckPunishmentsManager();
         this.databaseManager = new DatabaseManager();
+
+        this.mongo = new Mongo();
+        this.redis = new Redis();
+
+        this.checkPunishmentsManager = new CheckPunishmentsManager();
         this.staffPunishmentsManager = new StaffPunishmentsManager();
 
         this.punishDataManager = new PunishDataManager();
-        this.punishDataManager.loadConsole();
+        this.punishDataManager.load();
 
         this.started(time);
 
-        // TODO:
-        /**
-         * HOVERMESSAGES
-         * BUNGEE IMPLEMENTATION
+        /*
+          TODO:
+          HOVERMESSAGES
+          BANLIST
+          FLATFILE
          */
     }
 

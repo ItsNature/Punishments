@@ -1,13 +1,12 @@
 package gg.nature.punishments.managers;
 
-import gg.nature.punishments.data.PunishData;
-import gg.nature.punishments.punish.PunishmentType;
-import gg.nature.punishments.utils.ItemBuilder;
-import gg.nature.punishments.utils.Message;
-import gg.nature.punishments.utils.Utils;
 import gg.nature.punishments.Punishments;
+import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.punish.Punishment;
+import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Color;
+import gg.nature.punishments.utils.ItemBuilder;
+import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -71,69 +70,61 @@ public class StaffPunishmentsManager implements Listener {
         inventory.setItem(8, new ItemBuilder(Material.CARPET, 1, 7).setName("&eNext Page").build());
 
         IntStream.rangeClosed(9, 17).forEach(i -> inventory.setItem(i, glass));
+        IntStream.rangeClosed(36, 44).forEach(i -> inventory.setItem(i, glass));
+
+        inventory.setItem(49, new ItemBuilder(Material.CARPET).setName("&eType:&6 " + type.name()).build());
+        inventory.setItem(53, new ItemBuilder(Material.REDSTONE_BLOCK).setName("&6Go back").build());
 
         newPunished.forEach(punish -> {
-            if (newPunished.indexOf(punish) < page * 18 - 18) return;
-            if (newPunished.indexOf(punish) >= page * 18) return;
+            if(newPunished.indexOf(punish) < page * 18 - 18) return;
+            if(newPunished.indexOf(punish) >= page * 18) return;
 
             OfflinePlayer target = Bukkit.getOfflinePlayer(punish.split("/")[0]);
             PunishData otherData = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-
             Punishment punishment = Utils.getByNameAndAdded(otherData, type, Long.parseLong(punish.split("-")[1]));
 
             if(punishment == null) return;
 
-            ItemStack item;
             List<String> lore = new ArrayList<>();
+            boolean active = false;
+
+            lore.add(Color.translate("&7&m--------------------------------"));
 
             if(type == PunishmentType.KICK) {
-                lore.add(Color.translate("&7&m--------------------------------"));
                 lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
                 lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
                 lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
-                lore.add(Color.translate("&7&m--------------------------------"));
 
-                item = new ItemBuilder(Material.WOOL, 1, 5).setName("&e" + punishment.getTarget()).setLore(lore).build();
+                active = true;
             } else {
                 if(punishment.isActive()) {
-                    lore.add(Color.translate("&7&m--------------------------------"));
                     lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
                     lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
                     lore.add(Color.translate("&7Duration: &c" + punishment.getTimeLeft()));
                     lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
-                    lore.add(Color.translate("&7&m--------------------------------"));
 
-                    item = new ItemBuilder(Material.WOOL, 1, 5).setName("&e" + punishment.getTarget()).setLore(lore).build();
+                    active = true;
                 } else if(punishment.isRemoved()){
-                    lore.add(Color.translate("&7&m--------------------------------"));
                     lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
                     lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
                     lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
                     lore.add(Color.translate("&7Removed By: &c" + punishment.getRemovedBy()));
                     lore.add(Color.translate("&7Removed Reason: &c" + punishment.getRemovedReason()));
                     lore.add(Color.translate("&7Removed At: &c" + Utils.format(punishment.getRemovedAt())));
-                    lore.add(Color.translate("&7&m--------------------------------"));
-
-                    item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + punishment.getTarget()).setLore(lore).build();
                 } else {
-                    lore.add(Color.translate("&7&m--------------------------------"));
                     lore.add(Color.translate("&7UUID: &c" + Bukkit.getOfflinePlayer(punishment.getTarget()).getUniqueId()));
                     lore.add(Color.translate("&7Reason: &c" + punishment.getReason()));
                     lore.add(Color.translate("&7Expired At: &c" + Utils.format(punishment.getAdded() + punishment.getDuration())));
                     lore.add(Color.translate("&7Server: &c" + punishment.getServer()));
-                    lore.add(Color.translate("&7&m--------------------------------"));
-
-                    item = new ItemBuilder(Material.WOOL, 1, 14).setName("&e" + punishment.getTarget()).setLore(lore).build();
                 }
             }
 
+            lore.add(Color.translate("&7&m--------------------------------"));
+
+            ItemStack item = new ItemBuilder(Material.WOOL, 1, active ? 5 : 14).setName("&e" + punishment.getTarget()).setLore(lore).build();
+
             inventory.setItem(18 + newPunished.indexOf(punish) % 18, item);
         });
-
-        IntStream.rangeClosed(36, 44).forEach(i -> inventory.setItem(i, glass));
-
-        inventory.setItem(49, new ItemBuilder(Material.CARPET).setName("&eType:&6 " + type.name()).build());
-        inventory.setItem(53, new ItemBuilder(Material.REDSTONE_BLOCK).setName("&6Go back").build());
 
         return inventory;
     }

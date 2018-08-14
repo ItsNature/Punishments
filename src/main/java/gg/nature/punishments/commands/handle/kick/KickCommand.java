@@ -33,6 +33,10 @@ public class KickCommand extends BaseCommand {
             return;
         }
 
+        if(!Utils.isPermissible(sender, player)) {
+            sender.sendMessage(Language.NO_PERMISSION);
+            return;
+        }
 
         StringJoiner joiner = new StringJoiner(" ");
         IntStream.range(1, args.length).forEach(i -> joiner.add(args[i]));

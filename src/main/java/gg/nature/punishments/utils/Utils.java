@@ -1,5 +1,6 @@
 package gg.nature.punishments.utils;
 
+import gg.nature.punishments.Punishments;
 import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
@@ -7,49 +8,73 @@ import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.punish.PunishmentType;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.StringJoiner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 public class Utils {
 
-    private static Pattern timePattern = Pattern.compile("(?:([0-9]+)\\s*y[a-z]*[,\\s]*)?(?:([0-9]+)\\s*mo[a-z]*[,\\s]*)?(?:([0-9]+)\\s*w[a-z]*[,\\s]*)?(?:([0-9]+)\\s*d[a-z]*[,\\s]*)?(?:([0-9]+)\\s*h[a-z]*[,\\s]*)?(?:([0-9]+)\\s*m[a-z]*[,\\s]*)?(?:([0-9]+)\\s*(?:s[a-z]*)?)?", 2);
-    public static long PERMANENT = 2147483647;
+    public static long PERMANENT = Long.MAX_VALUE;
 
     public static String format(long value) {
         return new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date(value));
     }
 
     public static int getAmount(PunishData data, PunishmentType type) {
-        int i = 0;
-
-        for(Punishment punishment : data.getPunishments()) {
-            if(punishment.getType() == type) i++;
-        }
+        int i = (int) data.getPunishments().stream().filter(punishment -> punishment.getType() == type).count();
 
         return i > 64 ? 64 : i == 0 ? 1 : i;
     }
 
     public static int getSaffAmount(PunishData data, PunishmentType type) {
-        int i = 0;
-
-        for(String string : data.getPunished()) {
-            String firstType = string.split("/")[1];
-
-            if(PunishmentType.valueOf(firstType.split("-")[0]) == type) i++;
-        }
+        int i = (int) data.getPunished().stream().filter(punished -> PunishmentType.valueOf(punished.split("/")[1].split("-")[0]) == type).count();
 
         return i > 64 ? 64 : i == 0 ? 1 : i;
     }
 
+    public static boolean isPermissible(CommandSender sender, OfflinePlayer target) {
+        AtomicInteger weight = new AtomicInteger();
+        AtomicBoolean toReturn = new AtomicBoolean();
+
+        Config.WEIGHT.forEach(key -> {
+            String permission = Punishments.getInstance().getConfigFile().getString("WEIGHT." + key);
+
+            if(sender instanceof Player) {
+                Player player = (Player) sender;
+
+                PunishData senderData = Punishments.getInstance().getPunishDataManager().get(player.getUniqueId(), player.getName());
+                if(player.hasPermission(permission)) senderData.setWeight(player.isOp() ? Config.WEIGHT_OP : Integer.valueOf(key));
+
+                weight.set(senderData.getWeight());
+            } else {
+                weight.set(Config.WEIGHT_CONSOLE);
+            }
+
+            PunishData targetData = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
+
+            if(target.isOnline()) {
+                Player online = (Player) target;
+
+                if(online.hasPermission(permission)) targetData.setWeight(Integer.valueOf(key));
+            }
+
+            if(target.isOp()) targetData.setWeight(Config.WEIGHT_OP);
+
+            if(weight.get() >= targetData.getWeight()) toReturn.set(true);
+        });
+
+        return toReturn.get();
+    }
 
     public static void kickIfNeeded(PunishData data, AsyncPlayerPreLoginEvent event) {
         Punishment blacklist = getPunishment(data, PunishmentType.BLACKLIST);
@@ -68,27 +93,25 @@ public class Utils {
             return;
         }
 
-        boolean hasBannedAlts = false;
-        String name = "";
+        AtomicBoolean hasBannedAlts = new AtomicBoolean();
+        AtomicReference<String> name = new AtomicReference<>();
 
-        for(String alt : data.getAlts()) {
-            if(!alt.split("/")[1].equals("BANNED")) return;
+        data.getAlts().stream().filter(alt -> alt.split("/")[1].equals("BANNED")).forEach(alt -> {
+            hasBannedAlts.set(true);
+            name.set(alt.split("/")[0]);
+        });
 
-            hasBannedAlts = true;
-            name = alt.split("/")[0];
-        }
-
-        if(!hasBannedAlts) return;
+        if(!hasBannedAlts.get()) return;
 
         if(Config.IP_BAN) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-            event.setKickMessage(Language.IP_CONNECTED.replace("<server>", Language.SERVER).replace("<player>", name));
+            event.setKickMessage(Language.IP_CONNECTED.replace("<server>", Language.SERVER).replace("<player>", name.get()));
             return;
         }
 
         if(Config.SHOW_BANNED_ALTS) {
             Language.ALTS_ALTS_BANNED.forEach(message -> Message.sendMessage(message
-            .replace("<player>", data.getName()).replace("<alts>", getAlts(data)), "punish.staff"));
+            .replace("<player>", data.getName()).replace("<alts>", getAlts(data)), "punish.broadcast.alts"));
         }
     }
 
@@ -136,39 +159,53 @@ public class Utils {
         return reason;
     }
 
-    private static String getPunishment(PunishmentType type, boolean undo) {
+    public static String getPunishment(PunishmentType type, boolean undo, boolean ed) {
+        String toReturn = "";
+
         switch(type) {
-            case BLACKLIST: return undo ? "unblacklisted" : "blacklisted";
-            case BAN: return undo ? "unbanned" : "banned";
-            case MUTE: return undo ? "unmuted" : "muted";
-            case WARN: return undo ? "unwarned" : "warned";
-            case KICK: return "kicked";
+            case BLACKLIST: {
+                toReturn = (undo ? "unblacklist" : "blacklist");
+                break;
+            }
+            case BAN: {
+                toReturn = undo ? "unbann" : "bann";
+                break;
+            }
+            case MUTE: {
+                toReturn = undo ? "unmut" : "mut";
+                break;
+            }
+            case WARN: {
+                toReturn = undo ? "unwarn" : "warn";
+                break;
+            }
+            case KICK: toReturn = "kick";
         }
 
-        return "";
+        if(ed) toReturn+= "ed";
+
+        return toReturn;
     }
 
-    public static String getByType(PunishmentType type, boolean undo) {
-        switch(type) {
-            case BLACKLIST: return undo ? "unblacklist" : "blacklist";
-            case BAN: return undo ? "unban" : "ban";
-            case MUTE: return undo ? "unmute" : "mute";
-            case WARN: return undo ? "unwarn" : "warn";
-            case KICK: return "kick";
-        }
-
-        return "";
-    }
 
     public static String translate(String message, Punishment punishment, boolean undo) {
         return message.replace("<server>", Language.SERVER)
         .replace("<duration>", punishment.getTimeLeft())
         .replace("<date>", format(punishment.getAdded()))
-        .replace("<sender>", punishment.getSender())
+        .replace("<sender>", undo ? "<sender>" : punishment.getSender())
         .replace("<appeal>", Language.APPEAL)
         .replace("<target>", punishment.getTarget())
-        .replace("<type>", getPunishment(PunishmentType.valueOf(punishment.getType().name()), undo))
+        .replace("<type>", getPunishment(PunishmentType.valueOf(punishment.getType().name()), undo, true))
         .replace("<reason>", punishment.getReason());
+    }
+
+    public static boolean isInteger(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch(NumberFormatException e) {
+            return false;
+        }
     }
 
     public static boolean isDurationPermanent(String duration) {
@@ -179,84 +216,76 @@ public class Utils {
         && !dur.startsWith("4") && !dur.startsWith("5")
         && !dur.startsWith("6") && !dur.startsWith("7")
         && !dur.startsWith("8") && !dur.startsWith("9"))
-        || (!dur.endsWith("y") && !dur.endsWith("m")
-        && !dur.endsWith("w") && !dur.endsWith("d")
-        && !dur.endsWith("h") && !dur.endsWith("s"));
+        || (!dur.contains("y") && !dur.contains("m")
+        && !dur.contains("w") && !dur.contains("d")
+        && !dur.contains("h") && !dur.contains("s"));
     }
 
     public static boolean isReasonValid(String reason) {
-        return !reason.equals("") && !reason.equalsIgnoreCase("-s");
+        return !reason.equals("") && !reason.equalsIgnoreCase("-s") && !reason.contains("<=>");
     }
 
-    public static long parseDuration(String args) {
-        return System.currentTimeMillis() - Utils.parseDateDiff(args);
+    public static String punishmentToString(Punishment punishment, boolean request) {
+        return punishment.getType().name() + "," + punishment.getSender() + "," +
+               punishment.getTarget() + "," + String.valueOf(punishment.getAdded()) + "," +
+               punishment.getReason() + "," + String.valueOf(punishment.getDuration()) + "," +
+               request + "," + punishment.isRemoved() + "," +
+               punishment.getServer() + "," + punishment.getRemovedBy() + "," +
+               punishment.getRemovedReason() + "," + String.valueOf(punishment.getRemovedAt());
     }
 
-    private static long parseDateDiff(String time) {
-        Matcher m = timePattern.matcher(time);
+    public static Punishment stringToPunishment(String string) {
+        if(string.isEmpty()) return null;
 
-        int hours = 0;
-        int years = 0;
-        int months = 0;
-        int weeks = 0;
-        int days = 0;
-        int minutes = 0;
-        int seconds = 0;
+        String[] args = string.split(",");
 
-        boolean found = false;
+        String type = args[0];
+        String sender = args[1];
+        String target = args[2];
+        String added = args[3];
+        String reason = args[4];
+        String duration = args[5];
+        String req = args[6];
+        String removed = args[7];
+        String server = args[8];
+        String removedBy = args[9];
+        String removedReason = args[10];
+        String removedAt = args[11];
 
-        while(m.find()) {
-            if(m.group() == null || m.group().isEmpty()) continue;
+        Punishment toReturn = new Punishment(PunishmentType.valueOf(type), sender, target, Long.valueOf(added), reason, Long.valueOf(duration), Boolean.valueOf(req), Boolean.valueOf(removed), server);
 
-            for(int c = 0; c < m.groupCount(); ++c) {
-                if (m.group(c) == null || m.group(c).isEmpty()) continue;
+        toReturn.setRemovedBy(removedBy);
+        toReturn.setRemovedReason(removedReason);
+        toReturn.setRemovedAt(Long.valueOf(removedAt));
 
-                found = true;
-                break;
-            }
-
-            if(!found) continue;
-
-            if(m.group(1) != null && !m.group(1).isEmpty()) years = Integer.parseInt(m.group(1));
-            if(m.group(2) != null && !m.group(2).isEmpty()) months = Integer.parseInt(m.group(2));
-            if(m.group(3) != null && !m.group(3).isEmpty()) weeks = Integer.parseInt(m.group(3));
-            if(m.group(4) != null && !m.group(4).isEmpty()) days = Integer.parseInt(m.group(4));
-            if(m.group(5) != null && !m.group(5).isEmpty()) hours = Integer.parseInt(m.group(5));
-            if(m.group(6) != null && !m.group(6).isEmpty()) minutes = Integer.parseInt(m.group(6));
-            if(m.group(7) == null || m.group(7).isEmpty()) break;
-
-            seconds = Integer.parseInt(m.group(7));
-            break;
-        }
-
-        if(!found) return PERMANENT;
-
-        GregorianCalendar calendar = new GregorianCalendar();
-
-        if(years > 0) calendar.add(1, years * -1);
-        if(months > 0) calendar.add(2, months * -1);
-        if(weeks > 0) calendar.add(3, weeks * -1);
-        if(days > 0) calendar.add(5, days * -1);
-        if(hours > 0) calendar.add(11, hours * -1);
-        if(minutes > 0) calendar.add(12, minutes * -1);
-        if(seconds > 0) calendar.add(13, seconds * -1);
-
-        GregorianCalendar max = new GregorianCalendar();
-
-        max.add(1, 10);
-        return calendar.after(max) ? max.getTimeInMillis() : calendar.getTimeInMillis();
+        return toReturn;
     }
 
-    public static void dispatchCommand(String command) {
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+    public static long parseDuration(String time) {
+        String fixed = time.toLowerCase().trim();
+        String[] array = fixed.split("(?<=[a-zA-Z])(?=[0-9])");
+
+        Calendar calendar = Calendar.getInstance();
+
+        Stream.of(array).forEach(each -> {
+            String[] split = each.split("(?=[a-zA-Z])");
+            String addTo = each.substring(split[0].length());
+
+            calendar.add(getTimeByString(addTo), Integer.valueOf(split[0]));
+        });
+
+        return calendar.getTimeInMillis() - System.currentTimeMillis();
     }
 
-    public static boolean isInteger(String value) {
-        try {
-            Integer.parseInt(value);
-            return true;
-        } catch(NumberFormatException e) {
-            return false;
-        }
+    private static int getTimeByString(String time) {
+        if(time.startsWith("y")) return Calendar.YEAR;
+        if(time.startsWith("mo")) return Calendar.MONTH;
+        if(time.startsWith("w")) return Calendar.WEEK_OF_YEAR;
+        if(time.startsWith("d")) return Calendar.DAY_OF_YEAR;
+        if(time.startsWith("h")) return Calendar.HOUR;
+        if(time.startsWith("m")) return Calendar.MINUTE;
+        if(time.startsWith("s")) return Calendar.SECOND;
+
+        return 0;
     }
 }

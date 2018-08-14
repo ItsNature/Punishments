@@ -28,9 +28,13 @@ public class BlacklistCommand extends BaseCommand {
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-        Punishment punishment = Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.BLACKLIST);
 
-        if(punishment != null) {
+        if(!Utils.isPermissible(sender, target)) {
+            sender.sendMessage(Language.NO_PERMISSION);
+            return;
+        }
+
+        if(Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.BLACKLIST) != null) {
             sender.sendMessage(Language.ALREADY_BLACKLISTED.replace("<player>", target.getName()));
             return;
         }

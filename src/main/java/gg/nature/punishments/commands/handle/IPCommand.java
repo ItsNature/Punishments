@@ -10,10 +10,12 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+
 public class IPCommand extends BaseCommand {
 
     public IPCommand() {
-        super("ip", "punish.ip");
+        super("ip", Arrays.asList("checkip", "getip"),"punish.ip");
     }
 
     @Override

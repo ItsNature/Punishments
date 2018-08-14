@@ -21,7 +21,7 @@ public class CheckPunishmentsCommand extends BaseCommand {
     public void execute(CommandSender sender, String[] args) {
         Player player = (Player) sender;
 
-        if (args.length == 1) {
+        if(args.length == 1) {
             OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
             PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
 

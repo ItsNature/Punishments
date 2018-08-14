@@ -7,6 +7,7 @@ import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.StringJoiner;
@@ -25,6 +26,13 @@ public class WarnCommand extends BaseCommand {
             return;
         }
 
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+
+        if(!Utils.isPermissible(sender, target)) {
+            sender.sendMessage(Language.NO_PERMISSION);
+            return;
+        }
+
         StringJoiner joiner = new StringJoiner(" ");
         IntStream.range(1, args.length).forEach(i -> joiner.add(args[i]));
         String reason = joiner.toString();
@@ -34,6 +42,6 @@ public class WarnCommand extends BaseCommand {
             return;
         }
 
-        new Punishment(PunishmentType.WARN, sender.getName(), Bukkit.getOfflinePlayer(args[0]).getName(), System.currentTimeMillis(), reason, Utils.PERMANENT, true, false, Config.SERVER_NAME);
+        new Punishment(PunishmentType.WARN, sender.getName(), target.getName(), System.currentTimeMillis(), reason, Utils.PERMANENT, true, false, Config.SERVER_NAME);
     }
 }

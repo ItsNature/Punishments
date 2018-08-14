@@ -9,10 +9,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import java.util.Arrays;
+
 public class AltsCommand extends BaseCommand {
 
     public AltsCommand() {
-        super("alts", "punish.alts");
+        super("alts", Arrays.asList("altlist", "dupeip"),"punish.alts");
     }
 
     @Override

@@ -2,8 +2,10 @@ package gg.nature.punishments.punish;
 
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.data.PunishData;
+import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.utils.Message;
+import gg.nature.punishments.utils.Tasks;
 import gg.nature.punishments.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +31,8 @@ public class Punishment {
     private String removedReason;
     private long removedAt;
 
+    private boolean silent;
+
     public Punishment(PunishmentType type, String sender, String target, long added, String reason, long duration, boolean request, boolean removed, String server) {
         this.type = type;
         this.sender = sender;
@@ -37,11 +41,11 @@ public class Punishment {
 
         this.server = server;
 
-        boolean silent = false;
+        this.silent = false;
 
         if(reason.toLowerCase().contains("-s")) {
             this.reason = reason.replace("-silent", "").replace("-s", "");
-            silent = true;
+            this.silent = true;
         } else {
             this.reason = reason;
         }
@@ -49,11 +53,20 @@ public class Punishment {
         this.duration = duration;
 
         this.removed = removed;
-        this.removedBy = "";
-        this.removedReason = "";
+        this.removedBy = " ";
+        this.removedReason = " ";
         this.removedAt = 0;
 
-        if(request) this.request(silent);
+        if(!request) return;
+
+        Tasks.runLater(this::addPunishment, 10L);
+
+        if(Config.BUNGEE) {
+            Punishments.getInstance().getRedis().write(Config.REDIS_CHANNEL, "[P]" + Utils.punishmentToString(this, false));
+            return;
+        }
+
+        this.request();
     }
 
     public boolean isActive() {
@@ -70,33 +83,10 @@ public class Punishment {
         return DurationFormatUtils.formatDurationWords(time, true, true);
     }
 
-    private void request(boolean silent) {
-        // TODO: bungee implementation
-        // Returnati ako je bungee, kad posalje bungee message, kicka i posalje poruku, pa posalje nazad bungee message i u ovjde u pluginu tek saveam
-
-        OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(this.target);
-
-        if(this.sender.equalsIgnoreCase("CONSOLE")) {
-            Punishments.getInstance().getPunishDataManager().getConsoleData().getPunished().add(offlineTarget.getName() + "/" + type.name() + "-" + this.added);
-        } else {
-            Player sender = Bukkit.getPlayer(this.sender);
-            PunishData senderData = Punishments.getInstance().getPunishDataManager().get(sender.getUniqueId(), sender.getName());
-
-            senderData.getPunished().add(offlineTarget.getName() + "/" + type.name() + "-" + this.added);
-        }
-
+    public void request() {
         Player target = Bukkit.getPlayer(this.target);
 
-        if(target == null) {
-            PunishData targetData = Punishments.getInstance().getPunishDataManager().get(offlineTarget.getUniqueId(), offlineTarget.getName());
-
-            targetData.getPunishments().add(this);
-            targetData.saveAsync();
-        } else {
-            PunishData targetData = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-
-            targetData.getPunishments().add(this);
-
+        if(target != null) {
             switch(type) {
                 case MUTE: {
                     target.sendMessage(Utils.translate(Language.MUTED, this, false));
@@ -120,11 +110,30 @@ public class Punishment {
             }
         }
 
-        if(silent) {
-            Message.sendMessage(Utils.translate(Language.BROADCAST_SILENT, this, false), "punish.staff");
+        if(this.silent) {
+            Message.sendMessage(Utils.translate(Language.BROADCAST_SILENT, this, false), "punish.broadcast.punish.silent");
             return;
         }
 
         Message.sendMessage(Utils.translate(Language.BROADCAST_PUBLIC, this, false));
+    }
+
+    private void addPunishment() {
+        OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(this.target);
+
+        if(this.sender.equalsIgnoreCase("CONSOLE")) {
+            Punishments.getInstance().getPunishDataManager().getConsoleData().getPunished().add(offlineTarget.getName() + "/" + type.name() + "-" + this.added);
+        } else {
+            OfflinePlayer sender = Bukkit.getOfflinePlayer(this.sender);
+            PunishData senderData = Punishments.getInstance().getPunishDataManager().get(sender.getUniqueId(), sender.getName());
+
+            senderData.getPunished().add(offlineTarget.getName() + "/" + type.name() + "-" + this.added);
+        }
+
+        PunishData targetData = Punishments.getInstance().getPunishDataManager().get(offlineTarget.getUniqueId(), offlineTarget.getName());
+
+        targetData.getPunishments().add(this);
+
+        if(!offlineTarget.isOnline()) targetData.saveAsync();
     }
 }

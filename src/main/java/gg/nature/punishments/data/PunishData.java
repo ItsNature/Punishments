@@ -27,6 +27,7 @@ public class PunishData {
     private UUID uuid;
     private String name;
 
+    private int weight;
     private String ip;
     private List<String> punished;
     private List<String> alts;
@@ -38,6 +39,7 @@ public class PunishData {
         this.uuid = uuid;
         this.name = name;
 
+        this.weight = 0;
         this.ip = "";
         this.punished = new ArrayList<>();
         this.alts = new ArrayList<>();
@@ -46,43 +48,38 @@ public class PunishData {
         this.loaded = false;
     }
 
-    public void load() {
-        Document uuidDocument = (Document) Punishments.getInstance().getDatabaseManager().getPunishments()
+    void load() {
+        Document document = (Document) Punishments.getInstance().getMongo().getPunishments()
         .find(Filters.eq("uuid", this.uuid.toString())).first();
 
-        if(uuidDocument != null) {
-            this.ip = uuidDocument.getString("ip");
+        if(document != null) {
+            this.weight = document.getInteger("weight");
+            this.ip = document.getString("ip");
 
-            for(JsonElement doc : new JsonParser().parse(uuidDocument.getString("punished")).getAsJsonArray()) {
-                JsonObject jsonDoc = doc.getAsJsonObject();
+            for(JsonElement doc : new JsonParser().parse(document.getString("punished")).getAsJsonArray()) {
+                JsonObject json = doc.getAsJsonObject();
 
-                String name = jsonDoc.get("name").getAsString();
-                String type = jsonDoc.get("type").getAsString();
-                long added = jsonDoc.get("added").getAsLong();
-
-                String punished = name + "/" + type + "-" + added;
-
-                this.punished.add(punished);
+                this.punished.add(json.get("name").getAsString() + "/" + json.get("type").getAsString() + "-" + json.get("added").getAsLong());
             }
 
-            for(JsonElement doc : new JsonParser().parse(uuidDocument.getString("punishments")).getAsJsonArray()) {
-                JsonObject jsonDoc = doc.getAsJsonObject();
+            for(JsonElement doc : new JsonParser().parse(document.getString("punishments")).getAsJsonArray()) {
+                JsonObject json = doc.getAsJsonObject();
 
-                PunishmentType type = PunishmentType.valueOf(jsonDoc.get("type").getAsString());
-                String addedBy = jsonDoc.get("addedBy").getAsString();
-                String addedTo = jsonDoc.get("addedTo").getAsString();
-                long addedAt = jsonDoc.get("addedAt").getAsLong();
-                String reason = jsonDoc.get("reason").getAsString();
-                long duration = jsonDoc.get("duration").getAsLong();
-                boolean removed = jsonDoc.get("removed").getAsBoolean();
-                String server = jsonDoc.get("server").getAsString();
+                PunishmentType type = PunishmentType.valueOf(json.get("type").getAsString());
+                String addedBy = json.get("addedBy").getAsString();
+                String addedTo = json.get("addedTo").getAsString();
+                long addedAt = json.get("addedAt").getAsLong();
+                String reason = json.get("reason").getAsString();
+                long duration = json.get("duration").getAsLong();
+                boolean removed = json.get("removed").getAsBoolean();
+                String server = json.get("server").getAsString();
 
                 Punishment punishment = new Punishment(type, addedBy, addedTo, addedAt, reason, duration, false, removed, server);
 
                 if(removed) {
-                    punishment.setRemovedBy(jsonDoc.get("removedBy").getAsString());
-                    punishment.setRemovedAt(jsonDoc.get("removedAt").getAsLong());
-                    punishment.setRemovedReason(jsonDoc.get("removedReason").getAsString());
+                    punishment.setRemovedBy(json.get("removedBy").getAsString());
+                    punishment.setRemovedAt(json.get("removedAt").getAsLong());
+                    punishment.setRemovedReason(json.get("removedReason").getAsString());
                 }
 
                 this.punishments.add(punishment);
@@ -98,62 +95,63 @@ public class PunishData {
         Tasks.runAsync(this::save);
     }
 
-    public void save() {
+    void save() {
         Document document = new Document();
 
         document.put("uuid", this.uuid.toString());
         document.put("name", this.name);
 
+        document.put("weight", this.weight);
         document.put("ip", this.ip);
 
         JsonArray punished = new JsonArray();
 
         this.punished.forEach(punish -> {
-            JsonObject jsonDoc = new JsonObject();
+            JsonObject json = new JsonObject();
 
-            jsonDoc.addProperty("name", punish.split("/")[0]);
-            jsonDoc.addProperty("type", punish.split("/")[1].split("-")[0]);
-            jsonDoc.addProperty("added", punish.split("-")[1]);
+            json.addProperty("name", punish.split("/")[0]);
+            json.addProperty("type", punish.split("/")[1].split("-")[0]);
+            json.addProperty("added", punish.split("-")[1]);
 
-            punished.add(jsonDoc);
+            punished.add(json);
         });
 
         JsonArray alts = new JsonArray();
 
         this.alts.forEach(alt -> {
-            JsonObject jsonDoc = new JsonObject();
+            JsonObject json = new JsonObject();
 
-            jsonDoc.addProperty("name", alt.split("/")[0]);
-            jsonDoc.addProperty("type", alt.split("/")[1]);
+            json.addProperty("name", alt.split("/")[0]);
+            json.addProperty("type", alt.split("/")[1]);
 
-            alts.add(jsonDoc);
+            alts.add(json);
         });
 
         JsonArray punishments = new JsonArray();
 
         this.punishments.forEach(punishment -> {
-            JsonObject jsonDoc = new JsonObject();
+            JsonObject json = new JsonObject();
 
-            jsonDoc.addProperty("type", punishment.getType().name());
-            jsonDoc.addProperty("addedBy", punishment.getSender());
-            jsonDoc.addProperty("addedTo", punishment.getTarget());
-            jsonDoc.addProperty("addedAt", punishment.getAdded());
-            jsonDoc.addProperty("reason", punishment.getReason());
-            jsonDoc.addProperty("duration", punishment.getDuration());
-            jsonDoc.addProperty("removed", punishment.isRemoved());
-            jsonDoc.addProperty("server", punishment.getServer());
-            jsonDoc.addProperty("removedBy", punishment.getRemovedBy());
-            jsonDoc.addProperty("removedAt", punishment.getRemovedAt());
-            jsonDoc.addProperty("removedReason", punishment.getRemovedReason());
+            json.addProperty("type", punishment.getType().name());
+            json.addProperty("addedBy", punishment.getSender());
+            json.addProperty("addedTo", punishment.getTarget());
+            json.addProperty("addedAt", punishment.getAdded());
+            json.addProperty("reason", punishment.getReason());
+            json.addProperty("duration", punishment.getDuration());
+            json.addProperty("removed", punishment.isRemoved());
+            json.addProperty("server", punishment.getServer());
+            json.addProperty("removedBy", punishment.getRemovedBy());
+            json.addProperty("removedAt", punishment.getRemovedAt());
+            json.addProperty("removedReason", punishment.getRemovedReason());
 
-            punishments.add(jsonDoc);
+            punishments.add(json);
         });
 
         document.put("punished", punished.toString());
         document.put("alts", alts.toString());
         document.put("punishments", punishments.toString());
 
-        Punishments.getInstance().getDatabaseManager().getPunishments()
+        Punishments.getInstance().getMongo().getPunishments()
         .replaceOne(Filters.eq("uuid", this.uuid.toString()),
         document, new UpdateOptions().upsert(true));
 
