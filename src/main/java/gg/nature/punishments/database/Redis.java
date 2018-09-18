@@ -76,7 +76,6 @@ public class Redis {
 
     public void write(String channel, String message) {
         try(Jedis pool = this.jedisPool.getResource()) {
-
             if(Config.REDIS_AUTH) pool.auth(Config.REDIS_PASSWORD);
 
             pool.publish(channel, message);

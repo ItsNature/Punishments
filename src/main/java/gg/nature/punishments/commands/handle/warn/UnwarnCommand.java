@@ -44,6 +44,6 @@ public class UnwarnCommand extends BaseCommand {
             return;
         }
 
-        Punishments.getInstance().getPunishDataManager().unpunish(Config.BUNGEE, PunishmentType.WARN , target, sender.getName(), Utils.replaceSilent(reason), data);
+        Punishments.getInstance().getPunishDataManager().unpunish(Config.BUNGEE, PunishmentType.WARN , target, sender.getName(), reason, data);
     }
 }

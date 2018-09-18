@@ -131,13 +131,11 @@ public class StaffPunishmentsManager implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        String inv = event.getInventory().getName();
-
-        if(!inv.contains("[S]")) return;
-
         Player player = (Player) event.getWhoClicked();
-
         if(!player.hasPermission("punish.staffpunishments")) return;
+
+        String inv = event.getInventory().getName();
+        if(!inv.contains("[S]")) return;
 
         event.setCancelled(true);
 

@@ -38,18 +38,9 @@ public class Punishment {
         this.sender = sender;
         this.target = target;
         this.added = added;
-
         this.server = server;
-
-        this.silent = false;
-
-        if(reason.toLowerCase().contains("-s")) {
-            this.reason = reason.replace("-silent", "").replace("-s", "");
-            this.silent = true;
-        } else {
-            this.reason = reason;
-        }
-
+        this.silent = Utils.isSilent(reason);
+        this.reason = Utils.replaceSilent(reason);
         this.duration = duration;
 
         this.removed = removed;
@@ -74,13 +65,9 @@ public class Punishment {
     }
 
     public String getTimeLeft() {
-        if(this.removed) return "Removed";
-        if(this.duration == Utils.PERMANENT) return "Permanent";
-        if(!this.isActive()) return "Expired";
-
-        long time = Math.abs((System.currentTimeMillis() - (this.added + this.duration)));
-
-        return DurationFormatUtils.formatDurationWords(time, true, true);
+        return this.removed ? "Removed" : this.duration == Utils.PERMANENT ? "Permanent" :
+        !this.isActive() ? "Expired" : DurationFormatUtils.formatDurationWords(Math.abs((System.currentTimeMillis() -
+        (this.added + this.duration))), true, true);
     }
 
     public void request() {
@@ -88,25 +75,11 @@ public class Punishment {
 
         if(target != null) {
             switch(type) {
-                case MUTE: {
-                    target.sendMessage(Utils.translate(Language.MUTED, this, false));
-                    break;
-                }
-                case WARN: {
-                    target.sendMessage(Utils.translate(Language.WARNED, this, false));
-                    break;
-                }
-                case BAN: {
-                    target.kickPlayer(Utils.translate(Language.BAN_KICK, this, false));
-                    break;
-                }
-                case KICK: {
-                    target.kickPlayer(Utils.translate(Language.KICK_KICK, this, false));
-                    break;
-                }
-                case BLACKLIST: {
-                    target.kickPlayer(Utils.translate(Language.BLACKLIST_KICK, this, false));
-                }
+                case MUTE: target.sendMessage(Utils.translate(Language.MUTED, this, false)); break;
+                case WARN: target.sendMessage(Utils.translate(Language.WARNED, this, false)); break;
+                case BAN: target.kickPlayer(Utils.translate(Language.BAN_KICK, this, false)); break;
+                case KICK: target.kickPlayer(Utils.translate(Language.KICK_KICK, this, false)); break;
+                case BLACKLIST: target.kickPlayer(Utils.translate(Language.BLACKLIST_KICK, this, false));
             }
         }
 

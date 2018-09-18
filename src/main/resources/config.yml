@@ -2,7 +2,7 @@
 #                 Database configuration                  #
 #=========================================================#
 
-# This is required in order for the plugin to work.
+# This part required in order for the plugin to work.
 MONGODB:
   DATABASE: "punishments"
   HOST: "127.0.0.1"
@@ -25,7 +25,8 @@ REDIS:
 #                Punishments configuration                #
 #=========================================================#
 
-# Requires redis database
+# Requires redis & mongo database!
+# Both databases need to be connected to the same database in order for this to work.
 # Global punishments, messages...
 BUNGEE: false
 

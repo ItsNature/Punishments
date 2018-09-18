@@ -59,10 +59,9 @@ public class Punishments extends JavaPlugin {
 
         /*
           TODO:
-          HOVERMESSAGES
           BANLIST
           FLATFILE
-         */
+        */
     }
 
     @Override

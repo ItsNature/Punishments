@@ -45,6 +45,6 @@ public class UnmuteCommand extends BaseCommand {
             return;
         }
 
-        Punishments.getInstance().getPunishDataManager().unpunish(Config.BUNGEE, PunishmentType.MUTE, target, sender.getName(), Utils.replaceSilent(reason), data);
+        Punishments.getInstance().getPunishDataManager().unpunish(Config.BUNGEE, PunishmentType.MUTE, target, sender.getName(), reason, data);
     }
 }

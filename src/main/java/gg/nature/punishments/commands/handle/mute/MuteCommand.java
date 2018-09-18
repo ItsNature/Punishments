@@ -1,6 +1,5 @@
 package gg.nature.punishments.commands.handle.mute;
 
-import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
@@ -35,21 +34,14 @@ public class MuteCommand extends BaseCommand {
             return;
         }
 
-        if(Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.MUTE) != null) {
+        if(Utils.getPunishment(target, PunishmentType.MUTE) != null) {
             sender.sendMessage(Language.ALREADY_MUTED.replace("<player>", target.getName()));
             return;
         }
 
-        boolean perm = true;
-        long duration = Utils.PERMANENT;
-
-        if(!Utils.isDurationPermanent(args[1])) {
-            duration = Utils.parseDuration(args[1]);
-            perm = false;
-        }
-
+        long duration = Utils.getDuration(args[1].toLowerCase());
         StringJoiner joiner = new StringJoiner(" ");
-        IntStream.range(perm ? 1 : 2, args.length).forEach(i -> joiner.add(args[i]));
+        IntStream.range(duration == Utils.PERMANENT ? 1 : 2, args.length).forEach(i -> joiner.add(args[i]));
         String reason = joiner.toString();
 
         if(!Utils.isReasonValid(reason)) {

@@ -67,6 +67,9 @@ public class PunishDataManager implements Listener {
 
         if(punishment == null) return;
 
+        boolean silent = Utils.isSilent(reason);
+        reason = Utils.replaceSilent(reason);
+
         punishment.setRemoved(true);
         punishment.setRemovedBy(sender);
         punishment.setRemovedReason(reason);
@@ -75,7 +78,7 @@ public class PunishDataManager implements Listener {
 
         if(!target.isOnline()) targetData.saveAsync();
 
-        if(Utils.isSilent(reason)) {
+        if(silent) {
             Message.sendMessage(Utils.translate(Language.BROADCAST_SILENT, punishment, true).replace("<sender>", sender), "punish.broadcast.unpunish.silent");
             return;
         }
@@ -143,14 +146,11 @@ public class PunishDataManager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
-        Player player = event.getPlayer();
-        PunishData data = Punishments.getInstance().getPunishDataManager().get(player.getUniqueId(), player.getName());
-        Punishment punishment = Utils.getPunishment(data, PunishmentType.MUTE);
-
+        Punishment punishment = Utils.getPunishment(event.getPlayer(), PunishmentType.MUTE);
         if(punishment == null) return;
 
         event.setCancelled(true);
-        player.sendMessage(Utils.translate(Language.CHAT_MUTED, punishment, false));
+        event.getPlayer().sendMessage(Utils.translate(Language.CHAT_MUTED, punishment, false));
     }
 
     @EventHandler

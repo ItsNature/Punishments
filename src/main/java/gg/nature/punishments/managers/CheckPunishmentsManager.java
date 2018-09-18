@@ -129,13 +129,11 @@ public class CheckPunishmentsManager implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        String inv = event.getInventory().getName();
-
-        if(!inv.contains("[P]")) return;
-
         Player player = (Player) event.getWhoClicked();
-
         if(!player.hasPermission("punish.checkpunishments")) return;
+
+        String inv = event.getInventory().getName();
+        if(!inv.contains("[P]")) return;
 
         event.setCancelled(true);
 

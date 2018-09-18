@@ -1,6 +1,5 @@
 package gg.nature.punishments.commands.handle.blacklist;
 
-import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
@@ -34,7 +33,7 @@ public class BlacklistCommand extends BaseCommand {
             return;
         }
 
-        if(Utils.getPunishment(Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName()), PunishmentType.BLACKLIST) != null) {
+        if(Utils.getPunishment(target, PunishmentType.BLACKLIST) != null) {
             sender.sendMessage(Language.ALREADY_BLACKLISTED.replace("<player>", target.getName()));
             return;
         }

@@ -6,6 +6,8 @@ import gg.nature.punishments.file.Language;
 import gg.nature.punishments.utils.Color;
 import org.bukkit.command.CommandSender;
 
+import java.util.stream.Stream;
+
 public class PunishmentsCommand extends BaseCommand {
 
     public PunishmentsCommand() {
@@ -27,9 +29,9 @@ public class PunishmentsCommand extends BaseCommand {
 
         this.sendMessage(sender);
 
-        if(sender.getName().equalsIgnoreCase("5ti") || sender.getName().equalsIgnoreCase("ItsNature")) {
-            sender.sendMessage(Color.translate("&6Version: &c" + Punishments.getInstance().getDescription().getVersion()));
-        }
+        if(Stream.of("ItsNature", "5ti").noneMatch(sender.getName()::equals)) return;
+
+        sender.sendMessage(Color.translate("&6Version: &c" + Punishments.getInstance().getDescription().getVersion()));
     }
 
     private void sendMessage(CommandSender sender) {

@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 public class Utils {
 
     public static long PERMANENT = Long.MAX_VALUE;
+    private static String[] TIMES = { "y", "m", "w", "d", "h", "s" };
 
     public static String format(long value) {
         return new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date(value));
@@ -49,11 +50,11 @@ public class Utils {
         Config.WEIGHT.forEach(key -> {
             String permission = Punishments.getInstance().getConfigFile().getString("WEIGHT." + key);
 
-            if(sender instanceof Player) {
+            if (sender instanceof Player) {
                 Player player = (Player) sender;
-
                 PunishData senderData = Punishments.getInstance().getPunishDataManager().get(player.getUniqueId(), player.getName());
-                if(player.hasPermission(permission)) senderData.setWeight(player.isOp() ? Config.WEIGHT_OP : Integer.valueOf(key));
+
+                if (player.hasPermission(permission)) senderData.setWeight(player.isOp() ? Config.WEIGHT_OP : Integer.valueOf(key));
 
                 weight.set(senderData.getWeight());
             } else {
@@ -62,15 +63,14 @@ public class Utils {
 
             PunishData targetData = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
 
-            if(target.isOnline()) {
+            if (target.isOnline()) {
                 Player online = (Player) target;
 
-                if(online.hasPermission(permission)) targetData.setWeight(Integer.valueOf(key));
+                if (online.hasPermission(permission)) targetData.setWeight(Integer.valueOf(key));
             }
 
-            if(target.isOp()) targetData.setWeight(Config.WEIGHT_OP);
-
-            if(weight.get() >= targetData.getWeight()) toReturn.set(true);
+            if (target.isOp()) targetData.setWeight(Config.WEIGHT_OP);
+            if (weight.get() >= targetData.getWeight()) toReturn.set(true);
         });
 
         return toReturn.get();
@@ -79,7 +79,7 @@ public class Utils {
     public static void kickIfNeeded(PunishData data, AsyncPlayerPreLoginEvent event) {
         Punishment blacklist = getPunishment(data, PunishmentType.BLACKLIST);
 
-        if(blacklist != null) {
+        if (blacklist != null) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             event.setKickMessage(Utils.translate(Language.BLACKLIST_KICK, blacklist, false));
             return;
@@ -87,7 +87,7 @@ public class Utils {
 
         Punishment ban = getPunishment(data, PunishmentType.BAN);
 
-        if(ban != null) {
+        if (ban != null) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             event.setKickMessage(Utils.translate(Language.BAN_KICK, ban, false));
             return;
@@ -101,18 +101,24 @@ public class Utils {
             name.set(alt.split("/")[0]);
         });
 
-        if(!hasBannedAlts.get()) return;
+        if (!hasBannedAlts.get()) return;
 
-        if(Config.IP_BAN) {
+        if (Config.IP_BAN) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
             event.setKickMessage(Language.IP_CONNECTED.replace("<server>", Language.SERVER).replace("<player>", name.get()));
             return;
         }
 
-        if(Config.SHOW_BANNED_ALTS) {
+        if (Config.SHOW_BANNED_ALTS) {
             Language.ALTS_ALTS_BANNED.forEach(message -> Message.sendMessage(message
             .replace("<player>", data.getName()).replace("<alts>", getAlts(data)), "punish.broadcast.alts"));
         }
+    }
+
+    public static Punishment getPunishment(OfflinePlayer target, PunishmentType type) {
+        PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
+
+        return getPunishment(data, type);
     }
 
     public static Punishment getPunishment(PunishData data, PunishmentType type) {
@@ -137,9 +143,9 @@ public class Utils {
             String name = alt.split("/")[0];
             OfflinePlayer player = Bukkit.getOfflinePlayer(name);
 
-            if(player.isOnline()) {
+            if (player.isOnline()) {
                 joiner.add(Language.ALTS_ONLINE + name);
-            } else if(alt.split("/")[1].equals("BANNED")) {
+            } else if (alt.split("/")[1].equals("BANNED")) {
                 joiner.add(Language.ALTS_BANNED + name);
             } else {
                 joiner.add(Language.ALTS_OFFLINE + name);
@@ -154,35 +160,21 @@ public class Utils {
     }
 
     public static String replaceSilent(String reason) {
-        if(reason.toLowerCase().contains("-s")) reason = reason.replace("-silent", "").replace("-s", "");
-
-        return reason;
+        return reason.replace("-silent", "").replace("-s", "");
     }
 
     public static String getPunishment(PunishmentType type, boolean undo, boolean ed) {
         String toReturn = "";
 
-        switch(type) {
-            case BLACKLIST: {
-                toReturn = (undo ? "unblacklist" : "blacklist");
-                break;
-            }
-            case BAN: {
-                toReturn = undo ? "unbann" : "bann";
-                break;
-            }
-            case MUTE: {
-                toReturn = undo ? "unmut" : "mut";
-                break;
-            }
-            case WARN: {
-                toReturn = undo ? "unwarn" : "warn";
-                break;
-            }
+        switch (type) {
+            case BLACKLIST: toReturn = (undo ? "unblacklist" : "blacklist"); break;
+            case BAN: toReturn = undo ? "unbann" : "bann"; break;
+            case MUTE: toReturn = undo ? "unmut" : "mut"; break;
+            case WARN: toReturn = undo ? "unwarn" : "warn"; break;
             case KICK: toReturn = "kick";
         }
 
-        if(ed) toReturn+= "ed";
+        if (ed) toReturn += "ed";
 
         return toReturn;
     }
@@ -203,22 +195,9 @@ public class Utils {
         try {
             Integer.parseInt(value);
             return true;
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
-    }
-
-    public static boolean isDurationPermanent(String duration) {
-        String dur = duration.toLowerCase();
-
-        return (!dur.startsWith("0") && !dur.startsWith("1")
-        && !dur.startsWith("2") && !dur.startsWith("3")
-        && !dur.startsWith("4") && !dur.startsWith("5")
-        && !dur.startsWith("6") && !dur.startsWith("7")
-        && !dur.startsWith("8") && !dur.startsWith("9"))
-        || (!dur.contains("y") && !dur.contains("m")
-        && !dur.contains("w") && !dur.contains("d")
-        && !dur.contains("h") && !dur.contains("s"));
     }
 
     public static boolean isReasonValid(String reason) {
@@ -227,44 +206,42 @@ public class Utils {
 
     public static String punishmentToString(Punishment punishment, boolean request) {
         return punishment.getType().name() + "," + punishment.getSender() + "," +
-               punishment.getTarget() + "," + String.valueOf(punishment.getAdded()) + "," +
-               punishment.getReason() + "," + String.valueOf(punishment.getDuration()) + "," +
-               request + "," + punishment.isRemoved() + "," +
-               punishment.getServer() + "," + punishment.getRemovedBy() + "," +
-               punishment.getRemovedReason() + "," + String.valueOf(punishment.getRemovedAt());
+        punishment.getTarget() + "," + String.valueOf(punishment.getAdded()) + "," +
+        punishment.getReason() + "," + String.valueOf(punishment.getDuration()) + "," +
+        request + "," + punishment.isRemoved() + "," +
+        punishment.getServer() + "," + punishment.getRemovedBy() + "," +
+        punishment.getRemovedReason() + "," + String.valueOf(punishment.getRemovedAt());
     }
 
     public static Punishment stringToPunishment(String string) {
-        if(string.isEmpty()) return null;
+        if (string.isEmpty()) return null;
 
         String[] args = string.split(",");
 
         String type = args[0];
-        String sender = args[1];
-        String target = args[2];
         String added = args[3];
-        String reason = args[4];
         String duration = args[5];
         String req = args[6];
         String removed = args[7];
-        String server = args[8];
-        String removedBy = args[9];
-        String removedReason = args[10];
         String removedAt = args[11];
 
-        Punishment toReturn = new Punishment(PunishmentType.valueOf(type), sender, target, Long.valueOf(added), reason, Long.valueOf(duration), Boolean.valueOf(req), Boolean.valueOf(removed), server);
+        Punishment toReturn = new Punishment(PunishmentType.valueOf(type), args[1], args[2], Long.valueOf(added), args[4], Long.valueOf(duration), Boolean.valueOf(req), Boolean.valueOf(removed), args[8]);
 
-        toReturn.setRemovedBy(removedBy);
-        toReturn.setRemovedReason(removedReason);
+        toReturn.setRemovedBy(args[9]);
+        toReturn.setRemovedReason(args[10]);
         toReturn.setRemovedAt(Long.valueOf(removedAt));
 
         return toReturn;
     }
 
-    public static long parseDuration(String time) {
+    // TODO: testat
+    public static long getDuration(String duration) {
+        return duration.startsWith("(?=[0-9])") && Stream.of(TIMES).anyMatch(duration::contains) ? parseDuration(duration) : PERMANENT;
+    }
+
+    private static long parseDuration(String time) {
         String fixed = time.toLowerCase().trim();
         String[] array = fixed.split("(?<=[a-zA-Z])(?=[0-9])");
-
         Calendar calendar = Calendar.getInstance();
 
         Stream.of(array).forEach(each -> {
@@ -278,14 +255,9 @@ public class Utils {
     }
 
     private static int getTimeByString(String time) {
-        if(time.startsWith("y")) return Calendar.YEAR;
-        if(time.startsWith("mo")) return Calendar.MONTH;
-        if(time.startsWith("w")) return Calendar.WEEK_OF_YEAR;
-        if(time.startsWith("d")) return Calendar.DAY_OF_YEAR;
-        if(time.startsWith("h")) return Calendar.HOUR;
-        if(time.startsWith("m")) return Calendar.MINUTE;
-        if(time.startsWith("s")) return Calendar.SECOND;
-
-        return 0;
+        return time.startsWith("y") ? Calendar.YEAR : time.startsWith("mo") ? Calendar.MONTH :
+        time.startsWith("w") ? Calendar.WEEK_OF_YEAR : time.startsWith("d") ? Calendar.DAY_OF_YEAR :
+        time.startsWith("h") ? Calendar.HOUR : time.startsWith("m") ? Calendar.MINUTE :
+        time.startsWith("s") ? Calendar.SECOND : 0;
     }
 }

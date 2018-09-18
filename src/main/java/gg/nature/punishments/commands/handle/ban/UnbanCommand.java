@@ -45,6 +45,6 @@ public class UnbanCommand extends BaseCommand {
             return;
         }
 
-        Punishments.getInstance().getPunishDataManager().unpunish(Config.BUNGEE, PunishmentType.BAN , target, sender.getName(), Utils.replaceSilent(reason), data);
+        Punishments.getInstance().getPunishDataManager().unpunish(Config.BUNGEE, PunishmentType.BAN , target, sender.getName(), reason, data);
     }
 }

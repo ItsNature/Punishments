@@ -28,13 +28,9 @@ public class Mongo {
                 this.client = new MongoClient(uri);
             } else {
                 ServerAddress credentials = new ServerAddress(Config.MONGO_HOST, Config.MONGO_PORT);
+                MongoCredential credential = MongoCredential.createCredential(Config.MONGO_USER, Config.MONGO_USER, Config.MONGO_PASSWORD);
 
-                if(Config.MONGO_AUTH) {
-                    MongoCredential credential = MongoCredential.createCredential(Config.MONGO_USER, Config.MONGO_USER, Config.MONGO_PASSWORD);
-                    this.client = new MongoClient(credentials, Collections.singletonList(credential));
-                } else {
-                    this.client = new MongoClient(credentials);
-                }
+                this.client = Config.MONGO_AUTH ? new MongoClient(credentials, Collections.singletonList(credential)) : new MongoClient(credentials);
             }
 
             this.database = this.client.getDatabase(Config.MONGO_DATABASE);
