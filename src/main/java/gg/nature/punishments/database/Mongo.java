@@ -5,10 +5,14 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOptions;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.utils.Message;
 import lombok.Getter;
+import org.bson.Document;
 import org.bukkit.Bukkit;
 
 import java.util.Collections;
@@ -17,8 +21,8 @@ import java.util.Collections;
 public class Mongo {
 
     private MongoClient client;
-    private com.mongodb.client.MongoDatabase database;
-    private MongoCollection punishments;
+    private MongoDatabase database;
+    private MongoCollection<Document> punishments;
 
     public Mongo() {
         try {
@@ -48,5 +52,13 @@ public class Mongo {
             Message.sendConsole("&4===================================================");
             Bukkit.shutdown();
         }
+    }
+
+    public void replace(String identifier, Document document) {
+        this.punishments.replaceOne(Filters.eq("uuid", identifier), document, new ReplaceOptions().upsert(true));
+    }
+
+    public Document find(String identifier) {
+        return this.punishments.find(Filters.eq("uuid", identifier)).first();
     }
 }

@@ -91,9 +91,7 @@ public class PunishDataManager implements Listener {
 
         data.getAlts().clear();
 
-        Punishments.getInstance().getMongo().getPunishments().find(Filters.eq("ip", ip)).forEach((Block) found -> {
-            Document document = (Document) found;
-
+        Punishments.getInstance().getMongo().getPunishments().find(Filters.eq("ip", ip)).forEach((Block<? super Document>) document -> {
             String name = document.getString("name");
             UUID uuid = UUID.fromString(document.getString("uuid"));
 

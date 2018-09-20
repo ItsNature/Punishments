@@ -25,8 +25,8 @@ import java.util.Set;
 
 public class CommandManager {
 
-    private CommandMap commandMap;
     private Set<BaseCommand> commands;
+    private CommandMap commandMap;
 
     public CommandManager() {
         this.commands = new HashSet<>();

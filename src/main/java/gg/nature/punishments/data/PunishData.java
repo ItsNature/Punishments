@@ -4,8 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.punish.PunishmentType;
@@ -49,8 +47,7 @@ public class PunishData {
     }
 
     void load() {
-        Document document = (Document) Punishments.getInstance().getMongo().getPunishments()
-        .find(Filters.eq("uuid", this.uuid.toString())).first();
+        Document document = Punishments.getInstance().getMongo().find(this.uuid.toString());
 
         if(document != null) {
             this.weight = document.getInteger("weight");
@@ -151,12 +148,9 @@ public class PunishData {
         document.put("alts", alts.toString());
         document.put("punishments", punishments.toString());
 
-        Punishments.getInstance().getMongo().getPunishments()
-        .replaceOne(Filters.eq("uuid", this.uuid.toString()),
-        document, new UpdateOptions().upsert(true));
-
         this.loaded = false;
 
+        Punishments.getInstance().getMongo().replace(this.uuid.toString(), document);
         Punishments.getInstance().getPunishDataManager().getDataMap().remove(this.uuid);
     }
 }
