@@ -1,6 +1,5 @@
 package gg.nature.punishments.data;
 
-import com.mongodb.Block;
 import com.mongodb.client.model.Filters;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.file.Config;
@@ -8,6 +7,7 @@ import gg.nature.punishments.file.Language;
 import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Message;
+import gg.nature.punishments.utils.Tasks;
 import gg.nature.punishments.utils.Utils;
 import lombok.Getter;
 import org.bson.Document;
@@ -24,6 +24,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Getter
 public class PunishDataManager implements Listener {
@@ -91,7 +92,7 @@ public class PunishDataManager implements Listener {
 
         data.getAlts().clear();
 
-        Punishments.getInstance().getMongo().getPunishments().find(Filters.eq("ip", ip)).forEach((Block<? super Document>) document -> {
+        Punishments.getInstance().getMongo().getPunishments().find(Filters.eq("ip", ip)).forEach((Consumer<? super Document>) document -> {
             String name = document.getString("name");
             UUID uuid = UUID.fromString(document.getString("uuid"));
 
@@ -99,11 +100,9 @@ public class PunishDataManager implements Listener {
 
             if(altData.getName().equalsIgnoreCase(data.getName())) return;
 
-            if(Utils.getPunishment(altData, PunishmentType.BAN) == null) {
-                data.getAlts().add(altData.getName() + "/DEFAULT");
-            } else {
-                data.getAlts().add(altData.getName() + "/BANNED");
-            }
+            boolean exists = Utils.getPunishment(altData, PunishmentType.BAN) == null;
+
+            data.getAlts().add(new AltData(altData.getName(), exists ? "NONE" : "BAN"));
         });
     }
 
@@ -139,7 +138,7 @@ public class PunishDataManager implements Listener {
 
         this.loadAlts(event.getAddress().getHostName(), data);
 
-        Utils.kickIfNeeded(data, event);
+        Utils.check(data, event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

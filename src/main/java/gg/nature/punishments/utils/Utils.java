@@ -1,11 +1,12 @@
 package gg.nature.punishments.utils;
 
+import gg.nature.punishments.data.AltData;
+import gg.nature.punishments.punish.Punishment;
+import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
-import gg.nature.punishments.punish.Punishment;
-import gg.nature.punishments.punish.PunishmentType;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -25,7 +26,8 @@ import java.util.stream.Stream;
 public class Utils {
 
     public static long PERMANENT = Long.MAX_VALUE;
-    private static String[] TIMES = { "y", "m", "w", "d", "h", "s" };
+    private static String[] WORDTIMES = { "y", "m", "w", "d", "h", "s" };
+    private static String[] TIME = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
     public static String format(long value) {
         return new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a").format(new Date(value));
@@ -38,12 +40,21 @@ public class Utils {
     }
 
     public static int getSaffAmount(PunishData data, PunishmentType type) {
-        int i = (int) data.getPunished().stream().filter(punished -> PunishmentType.valueOf(punished.split("/")[1].split("-")[0]) == type).count();
+        int i = (int) data.getPunished().stream().filter(punished -> punished.getType() == type).count();
 
         return i > 64 ? 64 : i == 0 ? 1 : i;
     }
 
-    public static boolean isPermissible(CommandSender sender, OfflinePlayer target) {
+    public static boolean hasPermission(CommandSender sender, OfflinePlayer target) {
+        if(!isPermissible(sender, target)) {
+            sender.sendMessage(Language.NO_PERMISSION);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean isPermissible(CommandSender sender, OfflinePlayer target) {
         AtomicInteger weight = new AtomicInteger();
         AtomicBoolean toReturn = new AtomicBoolean();
 
@@ -76,7 +87,7 @@ public class Utils {
         return toReturn.get();
     }
 
-    public static void kickIfNeeded(PunishData data, AsyncPlayerPreLoginEvent event) {
+    public static void check(PunishData data, AsyncPlayerPreLoginEvent event) {
         Punishment blacklist = getPunishment(data, PunishmentType.BLACKLIST);
 
         if (blacklist != null) {
@@ -93,19 +104,21 @@ public class Utils {
             return;
         }
 
-        AtomicBoolean hasBannedAlts = new AtomicBoolean();
-        AtomicReference<String> name = new AtomicReference<>();
+        boolean bannedAlts = false;
+        String name = "";
 
-        data.getAlts().stream().filter(alt -> alt.split("/")[1].equals("BANNED")).forEach(alt -> {
-            hasBannedAlts.set(true);
-            name.set(alt.split("/")[0]);
-        });
+        AltData altData = data.getAlts().stream().filter(alt -> alt.getType().equals("BAN")).findFirst().orElse(null);
 
-        if (!hasBannedAlts.get()) return;
+        if(altData != null) {
+            bannedAlts = true;
+            name = altData.getName();
+        }
+
+        if (!bannedAlts) return;
 
         if (Config.IP_BAN) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-            event.setKickMessage(Language.IP_CONNECTED.replace("<server>", Language.SERVER).replace("<player>", name.get()));
+            event.setKickMessage(Language.IP_CONNECTED.replace("<server>", Language.SERVER).replace("<player>", name));
             return;
         }
 
@@ -140,12 +153,12 @@ public class Utils {
         StringJoiner joiner = new StringJoiner(Language.ALTS_FORMAT);
 
         data.getAlts().forEach(alt -> {
-            String name = alt.split("/")[0];
+            String name = alt.getName();
             OfflinePlayer player = Bukkit.getOfflinePlayer(name);
 
             if (player.isOnline()) {
                 joiner.add(Language.ALTS_ONLINE + name);
-            } else if (alt.split("/")[1].equals("BANNED")) {
+            } else if(alt.getType().equals("BAN")) {
                 joiner.add(Language.ALTS_BANNED + name);
             } else {
                 joiner.add(Language.ALTS_OFFLINE + name);
@@ -163,7 +176,7 @@ public class Utils {
         return reason.replace("-silent", "").replace("-s", "");
     }
 
-    public static String getPunishment(PunishmentType type, boolean undo, boolean ed) {
+    private static String getPunishment(PunishmentType type, boolean undo, boolean ed) {
         String toReturn = "";
 
         switch (type) {
@@ -178,6 +191,19 @@ public class Utils {
 
         return toReturn;
     }
+
+    public static String getCommand(PunishmentType type) {
+        switch (type) {
+            case BLACKLIST: return "unblacklist";
+            case BAN: return "unban";
+            case MUTE: return "ummute";
+            case WARN: return "unwarn";
+        }
+
+        return "";
+    }
+
+
 
 
     public static String translate(String message, Punishment punishment, boolean undo) {
@@ -234,9 +260,8 @@ public class Utils {
         return toReturn;
     }
 
-    // TODO: testat
     public static long getDuration(String duration) {
-        return duration.startsWith("(?=[0-9])") && Stream.of(TIMES).anyMatch(duration::contains) ? parseDuration(duration) : PERMANENT;
+        return Stream.of(TIME).anyMatch(duration::startsWith) && Stream.of(WORDTIMES).anyMatch(duration::contains) ? parseDuration(duration) : PERMANENT;
     }
 
     private static long parseDuration(String time) {

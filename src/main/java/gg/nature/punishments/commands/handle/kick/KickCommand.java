@@ -26,17 +26,14 @@ public class KickCommand extends BaseCommand {
             return;
         }
 
-        Player player = Bukkit.getPlayer(args[0]);
+        Player target = Bukkit.getPlayer(args[0]);
 
-        if(player == null) {
+        if(target == null) {
             sender.sendMessage(Language.PLAYER_NOT_ONLINE.replace("<player>", args[0]));
             return;
         }
 
-        if(!Utils.isPermissible(sender, player)) {
-            sender.sendMessage(Language.NO_PERMISSION);
-            return;
-        }
+        if(!Utils.hasPermission(sender, target)) return;
 
         StringJoiner joiner = new StringJoiner(" ");
         IntStream.range(1, args.length).forEach(i -> joiner.add(args[i]));
@@ -47,6 +44,6 @@ public class KickCommand extends BaseCommand {
             return;
         }
 
-        new Punishment(PunishmentType.KICK, sender.getName(), player.getName(), System.currentTimeMillis(), reason, Utils.PERMANENT, true, false, Config.SERVER_NAME);
+        new Punishment(PunishmentType.KICK, sender.getName(), target.getName(), System.currentTimeMillis(), reason, Utils.PERMANENT, true, false, Config.SERVER_NAME);
     }
 }

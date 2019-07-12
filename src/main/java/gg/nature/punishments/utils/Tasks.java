@@ -5,12 +5,16 @@ import org.bukkit.Bukkit;
 
 public class Tasks {
 
+    public static void runSync(Callable callable) {
+        Bukkit.getScheduler().runTask(Punishments.getInstance(), callable::call);
+    }
+
     public static void runAsync(Callable callable) {
         Bukkit.getScheduler().runTaskAsynchronously(Punishments.getInstance(), callable::call);
     }
 
-    public static void runLater(Callable callable, long delay) {
-        Bukkit.getScheduler().runTaskLater(Punishments.getInstance(), callable::call, delay);
+    public static void runLaterAsync(Callable callable, long delay) {
+        Bukkit.getScheduler().runTaskLaterAsynchronously(Punishments.getInstance(), callable::call, delay);
     }
 
     public interface Callable {

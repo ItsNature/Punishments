@@ -19,6 +19,8 @@ public class UnbanCommand extends BaseCommand {
 
     public UnbanCommand() {
         super("unban", Collections.singletonList("pardon"), "punish.unban");
+
+        this.async = true;
     }
 
     @Override

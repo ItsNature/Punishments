@@ -6,6 +6,7 @@ import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Color;
 import gg.nature.punishments.utils.ItemBuilder;
+import gg.nature.punishments.utils.Tasks;
 import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -141,59 +142,61 @@ public class CheckPunishmentsManager implements Listener {
 
         if(item == null || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
 
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(inv.substring(6).split(" -")[0]);
-        String name = item.getItemMeta().getDisplayName();
+        Tasks.runAsync(() -> {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(inv.substring(6).split(" -")[0]);
+            String name = item.getItemMeta().getDisplayName();
 
-        switch(item.getType()) {
-            case WOOL: {
-                if(name.contains("PM") || name.contains("AM")) return;
+            switch(item.getType()) {
+                case WOOL: {
+                    if(name.contains("PM") || name.contains("AM")) return;
 
-                PunishmentType type = PunishmentType.valueOf(name.substring(2, name.length() - 1).toUpperCase());
-                PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
+                    PunishmentType type = PunishmentType.valueOf(name.substring(2, name.length() - 1).toUpperCase());
+                    PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
 
-                player.openInventory(this.getPunishmentsByType(data, type, 1));
-                break;
-            }
-            case REDSTONE_BLOCK: {
-                PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
+                    player.openInventory(this.getPunishmentsByType(data, type, 1));
+                    break;
+                }
+                case REDSTONE_BLOCK: {
+                    PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
 
-                player.openInventory(this.getPunishmentsInventory(data));
-                break;
-            }
-            case CARPET: {
-                if(!name.contains("Page")) return;
+                    player.openInventory(this.getPunishmentsInventory(data));
+                    break;
+                }
+                case CARPET: {
+                    if(!name.contains("Page")) return;
 
-                String number = inv.split("- ")[1];
+                    String number = inv.split("- ")[1];
 
-                int page = Integer.parseInt(number.split("/")[0]);
-                int total = Integer.parseInt(number.split("/")[1]);
+                    int page = Integer.parseInt(number.split("/")[0]);
+                    int total = Integer.parseInt(number.split("/")[1]);
 
-                PunishmentType type = PunishmentType.valueOf(event.getInventory().getItem(49).getItemMeta().getDisplayName().split(" ")[1]);
+                    PunishmentType type = PunishmentType.valueOf(event.getInventory().getItem(49).getItemMeta().getDisplayName().split(" ")[1]);
 
-                if(name.contains("Previous")) {
-                    if (page == 1) {
-                        player.sendMessage(Color.translate("&eYou're already on the first page."));
+                    if(name.contains("Previous")) {
+                        if (page == 1) {
+                            player.sendMessage(Color.translate("&eYou're already on the first page."));
+                            return;
+                        }
+
+                        PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
+
+                        player.openInventory(this.getPunishmentsByType(data, type, page - 1));
+                        return;
+                    }
+
+                    if(!name.contains("Next")) return;
+
+                    if(page + 1 > total) {
+                        player.sendMessage(Color.translate("&eThere are no more pages."));
                         return;
                     }
 
                     PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
 
-                    player.openInventory(this.getPunishmentsByType(data, type, page - 1));
-                    return;
+                    player.openInventory(this.getPunishmentsByType(data, type, page + 1));
+                    break;
                 }
-
-                if(!name.contains("Next")) return;
-
-                if(page + 1 > total) {
-                    player.sendMessage(Color.translate("&eThere are no more pages."));
-                    return;
-                }
-
-                PunishData data = Punishments.getInstance().getPunishDataManager().get(offlinePlayer.getUniqueId(), offlinePlayer.getName());
-
-                player.openInventory(this.getPunishmentsByType(data, type, page + 1));
-                break;
             }
-        }
+        });
     }
 }

@@ -1,21 +1,21 @@
 package gg.nature.punishments.database;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.file.Config;
+import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.utils.Message;
 import lombok.Getter;
 import org.bson.Document;
 import org.bukkit.Bukkit;
-
-import java.util.Collections;
 
 @Getter
 public class Mongo {
@@ -26,16 +26,14 @@ public class Mongo {
 
     public Mongo() {
         try {
-            if(Punishments.getInstance().getDatabaseManager().isDev()) {
-                MongoClientURI uri = new MongoClientURI("mongodb+srv://Nature:Kurac@cluster0-4c7gf.mongodb.net/admin");
+            MongoClientSettings.Builder settings = MongoClientSettings.builder();
+            settings.applyConnectionString(getConnectionString());
 
-                this.client = new MongoClient(uri);
-            } else {
-                ServerAddress credentials = new ServerAddress(Config.MONGO_HOST, Config.MONGO_PORT);
-                MongoCredential credential = MongoCredential.createCredential(Config.MONGO_USER, Config.MONGO_USER, Config.MONGO_PASSWORD);
-
-                this.client = Config.MONGO_AUTH ? new MongoClient(credentials, Collections.singletonList(credential)) : new MongoClient(credentials);
+            if(Config.MONGO_AUTH) {
+                settings.credential(MongoCredential.createCredential(Config.MONGO_USER, Config.MONGO_DATABASE, Config.MONGO_PASSWORD));
             }
+
+            this.client = MongoClients.create(settings.build());
 
             this.database = this.client.getDatabase(Config.MONGO_DATABASE);
             this.punishments = this.database.getCollection("data");
@@ -50,8 +48,12 @@ public class Mongo {
             Message.sendConsole("&4MONGODB: &cFailed to connect to the database.");
             Message.sendConsole("&4MONGODB: &cPlease check your configuration and try again.");
             Message.sendConsole("&4===================================================");
-            Bukkit.shutdown();
+            Bukkit.getPluginManager().disablePlugin(Punishments.getInstance());
         }
+    }
+
+    private ConnectionString getConnectionString() {
+        return new ConnectionString("mongodb://" + Config.MONGO_HOST + ":" + Config.MONGO_PORT);
     }
 
     public void replace(String identifier, Document document) {

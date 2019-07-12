@@ -2,6 +2,7 @@ package gg.nature.punishments.punish;
 
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.data.PunishData;
+import gg.nature.punishments.data.PunishedData;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.utils.Message;
@@ -50,7 +51,7 @@ public class Punishment {
 
         if(!request) return;
 
-        Tasks.runLater(this::addPunishment, 10L);
+        Tasks.runLaterAsync(this::addPunishment, 10L);
 
         if(Config.BUNGEE) {
             Punishments.getInstance().getRedis().write(Config.REDIS_CHANNEL, "[P]" + Utils.punishmentToString(this, false));
@@ -94,13 +95,15 @@ public class Punishment {
     private void addPunishment() {
         OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(this.target);
 
+        PunishedData punished = new PunishedData(offlineTarget.getName(), type, this.added);
+
         if(this.sender.equalsIgnoreCase("CONSOLE")) {
-            Punishments.getInstance().getPunishDataManager().getConsoleData().getPunished().add(offlineTarget.getName() + "/" + type.name() + "-" + this.added);
+            Punishments.getInstance().getPunishDataManager().getConsoleData().getPunished().add(punished);
         } else {
             OfflinePlayer sender = Bukkit.getOfflinePlayer(this.sender);
             PunishData senderData = Punishments.getInstance().getPunishDataManager().get(sender.getUniqueId(), sender.getName());
 
-            senderData.getPunished().add(offlineTarget.getName() + "/" + type.name() + "-" + this.added);
+            senderData.getPunished().add(punished);
         }
 
         PunishData targetData = Punishments.getInstance().getPunishDataManager().get(offlineTarget.getUniqueId(), offlineTarget.getName());

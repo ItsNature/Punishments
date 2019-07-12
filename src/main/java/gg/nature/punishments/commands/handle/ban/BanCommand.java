@@ -17,7 +17,10 @@ import java.util.stream.IntStream;
 public class BanCommand extends BaseCommand {
 
     public BanCommand() {
-        super("ban", Arrays.asList("tempban", "tban"), "punish.ban");
+        super("ban", Config.IP_BAN ? Arrays.asList("tempban", "tban", "banip", "ipban", "tempipban", "tempbanip", "tbanip", "tipban")
+        : Arrays.asList("tempban", "tban"), "punish.ban");
+
+        this.async = true;
     }
 
     @Override
@@ -29,10 +32,7 @@ public class BanCommand extends BaseCommand {
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
 
-        if(!Utils.isPermissible(sender, target)) {
-            sender.sendMessage(Language.NO_PERMISSION);
-            return;
-        }
+        if(!Utils.hasPermission(sender, target)) return;
 
         if(Utils.getPunishment(target, PunishmentType.BAN) != null) {
             sender.sendMessage(Language.ALREADY_BANNED.replace("<player>", target.getName()));

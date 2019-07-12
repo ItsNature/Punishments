@@ -1,7 +1,7 @@
 package gg.nature.punishments.file;
 
-import gg.nature.punishments.Punishments;
 import gg.nature.punishments.utils.Color;
+import gg.nature.punishments.Punishments;
 import lombok.Getter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;

@@ -17,6 +17,8 @@ public class BlacklistCommand extends BaseCommand {
 
     public BlacklistCommand() {
         super("blacklist","punish.blacklist");
+
+        this.async = true;
     }
 
     @Override
@@ -28,10 +30,7 @@ public class BlacklistCommand extends BaseCommand {
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
 
-        if(!Utils.isPermissible(sender, target)) {
-            sender.sendMessage(Language.NO_PERMISSION);
-            return;
-        }
+        if(!Utils.hasPermission(sender, target)) return;
 
         if(Utils.getPunishment(target, PunishmentType.BLACKLIST) != null) {
             sender.sendMessage(Language.ALREADY_BLACKLISTED.replace("<player>", target.getName()));

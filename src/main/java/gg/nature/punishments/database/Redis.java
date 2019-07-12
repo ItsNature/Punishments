@@ -43,7 +43,7 @@ public class Redis {
             Message.sendConsole("&4REDIS: &cFailed to connect to the database.");
             Message.sendConsole("&4REDIS: &cPlease check your configuration and try again.");
             Message.sendConsole("&4===================================================");
-            Bukkit.shutdown();
+            Bukkit.getPluginManager().disablePlugin(Punishments.getInstance());
         }
     }
 

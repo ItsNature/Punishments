@@ -10,12 +10,10 @@ public class DatabaseManager {
 
 	private boolean connected;
 	private boolean redisConnected;
-	private boolean dev;
 
 	public DatabaseManager() {
 		this.connected = false;
 		this.redisConnected = false;
-		this.dev = true;
 	}
 
 	public void disable() {

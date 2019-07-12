@@ -18,6 +18,8 @@ public class UnwarnCommand extends BaseCommand {
 
     public UnwarnCommand() {
         super("unwarn", "punish.unwarn");
+
+        this.async = true;
     }
 
     @Override

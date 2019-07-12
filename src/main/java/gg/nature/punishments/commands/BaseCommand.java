@@ -1,6 +1,7 @@
 package gg.nature.punishments.commands;
 
 import gg.nature.punishments.file.Language;
+import gg.nature.punishments.utils.Tasks;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
@@ -11,6 +12,7 @@ import java.util.List;
 public abstract class BaseCommand extends BukkitCommand {
 
     private boolean forPlayersOnly;
+    protected boolean async;
 
     public BaseCommand(String name) {
         this(name, new ArrayList<>());
@@ -60,7 +62,11 @@ public abstract class BaseCommand extends BukkitCommand {
             return true;
         }
 
-        this.execute(sender, args);
+        if(this.async) {
+            Tasks.runAsync(() -> this.execute(sender, args));
+        } else {
+            this.execute(sender, args);
+        }
         return true;
     }
 

@@ -2,11 +2,11 @@ package gg.nature.punishments.commands.handle;
 
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
+import gg.nature.punishments.file.Config;
+import gg.nature.punishments.file.ConfigFile;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.utils.Color;
 import org.bukkit.command.CommandSender;
-
-import java.util.stream.Stream;
 
 public class PunishmentsCommand extends BaseCommand {
 
@@ -18,7 +18,12 @@ public class PunishmentsCommand extends BaseCommand {
     public void execute(CommandSender sender, String[] args) {
         if(sender.hasPermission("punish.reload")) {
             if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-                Punishments.getInstance().loadFiles();
+                Punishments.getInstance().setConfigFile(new ConfigFile("config.yml"));
+                Punishments.getInstance().setLanguageFile(new ConfigFile("language.yml"));
+
+                new Config();
+                new Language();
+
                 sender.sendMessage(Language.RELOAD);
                 return;
             }
@@ -28,13 +33,10 @@ public class PunishmentsCommand extends BaseCommand {
         }
 
         this.sendMessage(sender);
-
-        if(Stream.of("ItsNature", "5ti").noneMatch(sender.getName()::equals)) return;
-
-        sender.sendMessage(Color.translate("&6Version: &c" + Punishments.getInstance().getDescription().getVersion()));
     }
 
     private void sendMessage(CommandSender sender) {
         sender.sendMessage(Color.translate("&6This server is using punishments plugin created by ItsNature."));
+        sender.sendMessage(Color.translate("&6Version: &c" + Punishments.getInstance().getDescription().getVersion()));
     }
 }

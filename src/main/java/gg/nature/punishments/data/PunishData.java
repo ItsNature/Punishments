@@ -4,10 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import gg.nature.punishments.Punishments;
 import gg.nature.punishments.punish.Punishment;
 import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.utils.Tasks;
+import gg.nature.punishments.Punishments;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.Document;
@@ -27,8 +27,8 @@ public class PunishData {
 
     private int weight;
     private String ip;
-    private List<String> punished;
-    private List<String> alts;
+    private List<PunishedData> punished;
+    private List<AltData> alts;
     private Set<Punishment> punishments;
 
     private boolean loaded;
@@ -56,7 +56,9 @@ public class PunishData {
             for(JsonElement doc : new JsonParser().parse(document.getString("punished")).getAsJsonArray()) {
                 JsonObject json = doc.getAsJsonObject();
 
-                this.punished.add(json.get("name").getAsString() + "/" + json.get("type").getAsString() + "-" + json.get("added").getAsLong());
+                PunishedData punished = new PunishedData(json.get("name").getAsString(), PunishmentType.valueOf(json.get("type").getAsString()), json.get("added").getAsLong());
+
+                this.punished.add(punished);
             }
 
             for(JsonElement doc : new JsonParser().parse(document.getString("punishments")).getAsJsonArray()) {
@@ -106,9 +108,9 @@ public class PunishData {
         this.punished.forEach(punish -> {
             JsonObject json = new JsonObject();
 
-            json.addProperty("name", punish.split("/")[0]);
-            json.addProperty("type", punish.split("/")[1].split("-")[0]);
-            json.addProperty("added", punish.split("-")[1]);
+            json.addProperty("name", punish.getName());
+            json.addProperty("type", punish.getType().toString());
+            json.addProperty("added", punish.getAdded());
 
             punished.add(json);
         });
@@ -118,8 +120,8 @@ public class PunishData {
         this.alts.forEach(alt -> {
             JsonObject json = new JsonObject();
 
-            json.addProperty("name", alt.split("/")[0]);
-            json.addProperty("type", alt.split("/")[1]);
+            json.addProperty("name", alt.getName());
+            json.addProperty("type", alt.getType());
 
             alts.add(json);
         });

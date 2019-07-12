@@ -17,6 +17,8 @@ public class WarnCommand extends BaseCommand {
 
     public WarnCommand() {
         super("warn","punish.warn");
+
+        this.async = true;
     }
 
     @Override
@@ -28,10 +30,7 @@ public class WarnCommand extends BaseCommand {
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
 
-        if(!Utils.isPermissible(sender, target)) {
-            sender.sendMessage(Language.NO_PERMISSION);
-            return;
-        }
+        if(!Utils.hasPermission(sender, target)) return;
 
         StringJoiner joiner = new StringJoiner(" ");
         IntStream.range(1, args.length).forEach(i -> joiner.add(args[i]));

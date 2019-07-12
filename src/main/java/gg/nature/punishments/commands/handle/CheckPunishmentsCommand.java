@@ -15,20 +15,22 @@ public class CheckPunishmentsCommand extends BaseCommand {
 
     public CheckPunishmentsCommand() {
         super("checkpunishments", Collections.singletonList("c"), "punish.checkpunishments", true);
+
+        this.async = true;
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         Player player = (Player) sender;
 
-        if(args.length == 1) {
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-            PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-
-            player.openInventory(Punishments.getInstance().getCheckPunishmentsManager().getPunishmentsInventory(data));
+        if(args.length == 0) {
+            player.sendMessage(Language.CHECKPUNISHMENTS_USAGE);
             return;
         }
 
-        player.sendMessage(Language.CHECKPUNISHMENTS_USAGE);
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+        PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
+
+        player.openInventory(Punishments.getInstance().getCheckPunishmentsManager().getPunishmentsInventory(data));
     }
 }

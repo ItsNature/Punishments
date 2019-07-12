@@ -16,6 +16,8 @@ public class IPCommand extends BaseCommand {
 
     public IPCommand() {
         super("ip", Arrays.asList("checkip", "getip"),"punish.ip");
+
+        this.async = true;
     }
 
     @Override
@@ -25,19 +27,19 @@ public class IPCommand extends BaseCommand {
             return;
         }
 
-        if(args.length == 1) {
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-            PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-
-            if(data.getIp().equals("")) {
-                sender.sendMessage(Language.IP_NOT_FOUND.replace("<player>", target.getName()));
-                return;
-            }
-
-            sender.sendMessage(Language.IP.replace("<player>", target.getName()).replace("<ip>", data.getIp()));
+        if(args.length == 0) {
+            sender.sendMessage(Language.IP_USAGE);
             return;
         }
 
-        sender.sendMessage(Language.IP_USAGE);
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+        PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
+
+        if(data.getIp().equals("")) {
+            sender.sendMessage(Language.IP_NOT_FOUND.replace("<player>", target.getName()));
+            return;
+        }
+
+        sender.sendMessage(Language.IP.replace("<player>", target.getName()).replace("<ip>", data.getIp()));
     }
 }

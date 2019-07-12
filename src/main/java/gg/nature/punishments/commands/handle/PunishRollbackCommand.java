@@ -3,8 +3,10 @@ package gg.nature.punishments.commands.handle;
 import gg.nature.punishments.Punishments;
 import gg.nature.punishments.commands.BaseCommand;
 import gg.nature.punishments.data.PunishData;
+import gg.nature.punishments.data.PunishedData;
 import gg.nature.punishments.file.Language;
 import gg.nature.punishments.punish.PunishmentType;
+import gg.nature.punishments.utils.Tasks;
 import gg.nature.punishments.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -19,6 +21,8 @@ public class PunishRollbackCommand extends BaseCommand {
 
     public PunishRollbackCommand() {
         super("punishrollback", Arrays.asList("staffrollback", "srollback"), "punish.punishrollback");
+
+        this.async = true;
     }
 
     @Override
@@ -43,7 +47,7 @@ public class PunishRollbackCommand extends BaseCommand {
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
         PunishData data = Punishments.getInstance().getPunishDataManager().get(target.getUniqueId(), target.getName());
-        List<String> punished = data.getPunished();
+        List<PunishedData> punished = data.getPunished();
 
         if(args[1].equalsIgnoreCase("all")) amount = punished.size();
 
@@ -52,17 +56,16 @@ public class PunishRollbackCommand extends BaseCommand {
             return;
         }
 
-        List<String> toPunish = new ArrayList<>(punished.subList(punished.size() - amount, punished.size()));
+        List<PunishedData> toPunish = new ArrayList<>(punished.subList(punished.size() - amount, punished.size()));
 
-        toPunish.forEach(string -> {
-            String name = string.split("/")[0];
-            PunishmentType type = PunishmentType.valueOf(string.split("/")[1].split("-")[0]);
+        toPunish.forEach(punish -> {
+            PunishmentType type = punish.getType();
 
             if(type != PunishmentType.KICK) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Utils.getPunishment(type, true, false) + " " + name + " ROLLBACK" + (silent.get() ? " -s" : ""));
+                Tasks.runSync(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Utils.getCommand(type) + " " + punish.getName() + " ROLLBACK" + (silent.get() ? " -s" : "")));
             }
 
-            data.getPunished().remove(string);
+            data.getPunished().remove(punish);
         });
 
         if(!target.isOnline()) data.saveAsync();

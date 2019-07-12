@@ -18,6 +18,8 @@ public class UnblacklistCommand extends BaseCommand {
 
     public UnblacklistCommand() {
         super("unblacklist", "punish.unblacklist");
+
+        this.async = true;
     }
 
     @Override
