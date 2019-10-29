@@ -19,8 +19,6 @@ public class BanCommand extends BaseCommand {
     public BanCommand() {
         super("ban", Config.IP_BAN ? Arrays.asList("tempban", "tban", "banip", "ipban", "tempipban", "tempbanip", "tbanip", "tipban")
         : Arrays.asList("tempban", "tban"), "punish.ban");
-
-        this.async = true;
     }
 
     @Override

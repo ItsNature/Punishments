@@ -12,7 +12,7 @@ import java.util.List;
 public abstract class BaseCommand extends BukkitCommand {
 
     private boolean forPlayersOnly;
-    protected boolean async;
+    protected boolean sync;
 
     public BaseCommand(String name) {
         this(name, new ArrayList<>());
@@ -62,10 +62,10 @@ public abstract class BaseCommand extends BukkitCommand {
             return true;
         }
 
-        if(this.async) {
-            Tasks.runAsync(() -> this.execute(sender, args));
-        } else {
+        if(this.sync) {
             this.execute(sender, args);
+        } else {
+            Tasks.runAsync(() -> this.execute(sender, args));
         }
         return true;
     }

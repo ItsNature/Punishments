@@ -17,8 +17,6 @@ public class BlacklistCommand extends BaseCommand {
 
     public BlacklistCommand() {
         super("blacklist","punish.blacklist");
-
-        this.async = true;
     }
 
     @Override

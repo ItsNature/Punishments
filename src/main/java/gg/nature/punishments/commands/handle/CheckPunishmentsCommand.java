@@ -15,8 +15,6 @@ public class CheckPunishmentsCommand extends BaseCommand {
 
     public CheckPunishmentsCommand() {
         super("checkpunishments", Collections.singletonList("c"), "punish.checkpunishments", true);
-
-        this.async = true;
     }
 
     @Override

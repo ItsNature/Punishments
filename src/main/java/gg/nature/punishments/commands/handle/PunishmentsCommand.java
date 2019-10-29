@@ -12,6 +12,8 @@ public class PunishmentsCommand extends BaseCommand {
 
     public PunishmentsCommand() {
         super("punishments");
+
+        this.sync = true;
     }
 
     @Override

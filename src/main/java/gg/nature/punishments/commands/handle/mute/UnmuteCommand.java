@@ -19,8 +19,6 @@ public class UnmuteCommand extends BaseCommand {
 
     public UnmuteCommand() {
         super("unmute", Collections.singletonList("unsilent"), "punish.unban");
-
-        this.async = true;
     }
 
     @Override

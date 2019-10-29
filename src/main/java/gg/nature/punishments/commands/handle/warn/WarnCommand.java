@@ -17,8 +17,6 @@ public class WarnCommand extends BaseCommand {
 
     public WarnCommand() {
         super("warn","punish.warn");
-
-        this.async = true;
     }
 
     @Override

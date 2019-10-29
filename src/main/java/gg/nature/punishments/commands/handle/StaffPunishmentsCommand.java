@@ -15,8 +15,6 @@ public class StaffPunishmentsCommand extends BaseCommand {
 
     public StaffPunishmentsCommand() {
         super("staffpunishments", Collections.singletonList("staffc"), "punish.staffpunishments", true);
-
-        this.async = true;
     }
 
     @Override

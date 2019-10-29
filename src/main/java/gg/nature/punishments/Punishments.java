@@ -23,7 +23,6 @@ public class Punishments extends JavaPlugin {
     @Setter private ConfigFile configFile;
     @Setter private ConfigFile languageFile;
 
-    private CommandManager commandManager;
     private DatabaseManager databaseManager;
 
     private Mongo mongo;
@@ -46,7 +45,8 @@ public class Punishments extends JavaPlugin {
         new Config();
         new Language();
 
-        this.commandManager = new CommandManager();
+        new CommandManager();
+
         this.databaseManager = new DatabaseManager();
 
         this.mongo = new Mongo();
@@ -67,7 +67,6 @@ public class Punishments extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.commandManager.disable();
         this.punishDataManager.disable();
         this.databaseManager.disable();
     }

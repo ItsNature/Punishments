@@ -18,8 +18,6 @@ public class MuteCommand extends BaseCommand {
 
     public MuteCommand() {
         super("mute", Arrays.asList("tempmute", "tmute", "silent"), "punish.mute");
-
-        this.async = true;
     }
 
     @Override

@@ -1,12 +1,12 @@
 package gg.nature.punishments.utils;
 
-import gg.nature.punishments.data.AltData;
-import gg.nature.punishments.punish.Punishment;
-import gg.nature.punishments.punish.PunishmentType;
 import gg.nature.punishments.Punishments;
+import gg.nature.punishments.data.AltData;
 import gg.nature.punishments.data.PunishData;
 import gg.nature.punishments.file.Config;
 import gg.nature.punishments.file.Language;
+import gg.nature.punishments.punish.Punishment;
+import gg.nature.punishments.punish.PunishmentType;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class Utils {
@@ -152,18 +151,11 @@ public class Utils {
     public static String getAlts(PunishData data) {
         StringJoiner joiner = new StringJoiner(Language.ALTS_FORMAT);
 
-        data.getAlts().forEach(alt -> {
-            String name = alt.getName();
-            OfflinePlayer player = Bukkit.getOfflinePlayer(name);
-
-            if (player.isOnline()) {
-                joiner.add(Language.ALTS_ONLINE + name);
-            } else if(alt.getType().equals("BAN")) {
-                joiner.add(Language.ALTS_BANNED + name);
-            } else {
-                joiner.add(Language.ALTS_OFFLINE + name);
-            }
-        });
+        data.getAlts().forEach(alt ->
+        joiner.add(Bukkit.getOfflinePlayer(
+        alt.getName()).isOnline() ? Language.ALTS_ONLINE + alt.getName() :
+        alt.getType().equals("BAN") ? Language.ALTS_BANNED + alt.getType() :
+        Language.ALTS_OFFLINE + alt.getName()));
 
         return joiner.toString();
     }
@@ -176,35 +168,19 @@ public class Utils {
         return reason.replace("-silent", "").replace("-s", "");
     }
 
-    private static String getPunishment(PunishmentType type, boolean undo, boolean ed) {
+    private static String getPunishment(PunishmentType type, boolean undo) {
         String toReturn = "";
 
         switch (type) {
-            case BLACKLIST: toReturn = (undo ? "unblacklist" : "blacklist"); break;
-            case BAN: toReturn = undo ? "unbann" : "bann"; break;
-            case MUTE: toReturn = undo ? "unmut" : "mut"; break;
-            case WARN: toReturn = undo ? "unwarn" : "warn"; break;
-            case KICK: toReturn = "kick";
+            case BLACKLIST: toReturn = (undo ? "unblacklisted" : "blacklisted"); break;
+            case BAN: toReturn = undo ? "unbanned" : "banned"; break;
+            case MUTE: toReturn = undo ? "unmuted" : "muted"; break;
+            case WARN: toReturn = undo ? "unwarned" : "warned"; break;
+            case KICK: toReturn = "kicked";
         }
-
-        if (ed) toReturn += "ed";
 
         return toReturn;
     }
-
-    public static String getCommand(PunishmentType type) {
-        switch (type) {
-            case BLACKLIST: return "unblacklist";
-            case BAN: return "unban";
-            case MUTE: return "ummute";
-            case WARN: return "unwarn";
-        }
-
-        return "";
-    }
-
-
-
 
     public static String translate(String message, Punishment punishment, boolean undo) {
         return message.replace("<server>", Language.SERVER)
@@ -213,7 +189,7 @@ public class Utils {
         .replace("<sender>", undo ? "<sender>" : punishment.getSender())
         .replace("<appeal>", Language.APPEAL)
         .replace("<target>", punishment.getTarget())
-        .replace("<type>", getPunishment(PunishmentType.valueOf(punishment.getType().name()), undo, true))
+        .replace("<type>", getPunishment(PunishmentType.valueOf(punishment.getType().name()), undo))
         .replace("<reason>", punishment.getReason());
     }
 

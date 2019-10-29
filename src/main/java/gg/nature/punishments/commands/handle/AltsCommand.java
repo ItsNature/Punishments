@@ -16,8 +16,6 @@ public class AltsCommand extends BaseCommand {
 
     public AltsCommand() {
         super("alts", Arrays.asList("altlist", "dupeip"),"punish.alts");
-
-        this.async = true;
     }
 
     @Override

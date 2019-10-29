@@ -16,8 +16,6 @@ public class IPCommand extends BaseCommand {
 
     public IPCommand() {
         super("ip", Arrays.asList("checkip", "getip"),"punish.ip");
-
-        this.async = true;
     }
 
     @Override

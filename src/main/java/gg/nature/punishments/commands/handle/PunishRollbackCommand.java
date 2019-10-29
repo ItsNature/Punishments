@@ -21,8 +21,6 @@ public class PunishRollbackCommand extends BaseCommand {
 
     public PunishRollbackCommand() {
         super("punishrollback", Arrays.asList("staffrollback", "srollback"), "punish.punishrollback");
-
-        this.async = true;
     }
 
     @Override
@@ -38,11 +36,9 @@ public class PunishRollbackCommand extends BaseCommand {
         }
 
         int amount = 0;
-
         if(Utils.isInteger(args[1])) amount = Integer.parseInt(args[1]);
 
         AtomicBoolean silent = new AtomicBoolean();
-
         if(args.length == 3 && args[2].toLowerCase().contains("-s")) silent.set(true);
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
@@ -62,7 +58,7 @@ public class PunishRollbackCommand extends BaseCommand {
             PunishmentType type = punish.getType();
 
             if(type != PunishmentType.KICK) {
-                Tasks.runSync(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Utils.getCommand(type) + " " + punish.getName() + " ROLLBACK" + (silent.get() ? " -s" : "")));
+                Tasks.runSync(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "un" + type.name().toLowerCase() + " " + punish.getName() + " ROLLBACK" + (silent.get() ? " -s" : "")));
             }
 
             data.getPunished().remove(punish);
